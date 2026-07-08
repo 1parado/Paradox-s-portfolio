@@ -9,8 +9,9 @@ import {
   useState,
 } from 'react';
 import { defaultDock, defaultEditKey, defaultPages, defaultWallpaper } from '@/lib/defaultData';
+import { findFolderById, isDescendantFolder, isFolder } from '@/lib/folders';
 import { readSiteWallpaper } from '@/lib/githubAssets';
-import type { AppItem, DesktopIconPosition, HomePage } from '@/lib/types';
+import type { AppItem, DesktopIconPosition, HomePage, HomeItem } from '@/lib/types';
 
 type StoreValue = {
   pages: HomePage[];
@@ -30,6 +31,9 @@ type StoreValue = {
   sortDesktop: (mode: 'name' | 'kind' | 'date') => void;
   reorderPageItems: (pageId: string, items: HomePage['items']) => void;
   moveItemAcrossPages: (fromPageId: string, toPageId: string, itemId: string, targetIndex: number) => void;
+  renameFolder: (folderId: string, title: string) => void;
+  moveItemIntoFolder: (itemId: string, targetFolderId: string) => void;
+  moveItemToPage: (itemId: string, pageId: string) => void;
   removeItem: (pageId: string, itemId: string) => void;
   moveToTrash: (pageId: string, itemId: string) => void;
   restoreFromTrash: (itemId: string) => void;
@@ -189,6 +193,99 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  // 递归：在 items 中按 id 移除一个节点（可能是 page 顶层项或文件夹内的项）。
+  function removeFromItems(items: HomeItem[], itemId: string): { items: HomeItem[]; removed: HomeItem | null } {
+    let removed: HomeItem | null = null;
+    const filtered = items.filter((item) => {
+      if (item.id === itemId) {
+        removed = item;
+        return false;
+      }
+      return true;
+    });
+    const next = filtered.map((item) => {
+      if (!isFolder(item)) return item;
+      const childResult = removeFromItems(item.children, itemId);
+      if (childResult.removed) removed = childResult.removed;
+      return { ...item, children: childResult.items };
+    });
+    return { items: next, removed };
+  }
+
+  // 递归：把 item 追加到目标文件夹的 children 末尾。
+  function pushIntoFolder(items: HomeItem[], targetFolderId: string, item: HomeItem): HomeItem[] {
+    return items.map((entry) => {
+      if (!isFolder(entry)) return entry;
+      if (entry.id === targetFolderId) {
+        return { ...entry, children: [...entry.children, item] };
+      }
+      return { ...entry, children: pushIntoFolder(entry.children, targetFolderId, item) };
+    });
+  }
+
+  // 递归：按 id 重命名文件夹。
+  function renameFolderInItems(items: HomeItem[], folderId: string, title: string): HomeItem[] {
+    return items.map((item) => {
+      if (isFolder(item)) {
+        const nextTitle = item.id === folderId ? title : item.title;
+        return { ...item, title: nextTitle, children: renameFolderInItems(item.children, folderId, title) };
+      }
+      return item;
+    });
+  }
+
+  const renameFolder = useCallback((folderId: string, title: string) => {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+    setPages((current) => current.map((page) => ({
+      ...page,
+      items: renameFolderInItems(page.items, folderId, trimmed),
+    })));
+  }, []);
+
+  const moveItemIntoFolder = useCallback((itemId: string, targetFolderId: string) => {
+    if (itemId === targetFolderId) return;
+    setPages((current) => {
+      // 不能把文件夹拖进它自己的子孙文件夹
+      if (isDescendantFolder(current, targetFolderId, itemId)) return current;
+      const target = findFolderById(current, targetFolderId);
+      if (!target) return current;
+      // 先从所有 page 顶层 + 文件夹内递归移除
+      let removed: HomeItem | null = null;
+      const cleaned = current.map((page) => {
+        const result = removeFromItems(page.items, itemId);
+        if (result.removed) removed = result.removed;
+        return { ...page, items: result.items };
+      });
+      if (!removed) return current;
+      const withItem = cleaned.map((page) => ({
+        ...page,
+        items: pushIntoFolder(page.items, targetFolderId, removed as HomeItem),
+      }));
+      return withItem;
+    });
+    setDesktopIconPositions((current) => {
+      if (!(itemId in current)) return current;
+      const { [itemId]: _removed, ...rest } = current;
+      return rest;
+    });
+  }, []);
+
+  const moveItemToPage = useCallback((itemId: string, pageId: string) => {
+    setPages((current) => {
+      let removed: HomeItem | null = null;
+      const cleaned = current.map((page) => {
+        const result = removeFromItems(page.items, itemId);
+        if (result.removed) removed = result.removed;
+        return { ...page, items: result.items };
+      });
+      if (!removed) return current;
+      return cleaned.map((page) => (
+        page.id === pageId ? { ...page, items: [...page.items, removed as HomeItem] } : page
+      ));
+    });
+  }, []);
+
   const removeItem = useCallback((pageId: string, itemId: string) => {
     setPages((current) => current.map((page) => (page.id === pageId ? { ...page, items: page.items.filter((item) => item.id !== itemId) } : page)));
   }, []);
@@ -262,6 +359,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       sortDesktop,
       reorderPageItems,
       moveItemAcrossPages,
+      renameFolder,
+      moveItemIntoFolder,
+      moveItemToPage,
       removeItem,
       moveToTrash,
       restoreFromTrash,
@@ -269,7 +369,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       resetToDefault,
       verifyEditKey,
     }),
-    [addToDock, createFolder, desktopIconPositions, desktopWidgetPositions, dock, editMode, emptyTrash, moveItemAcrossPages, moveToTrash, pages, removeItem, reorderPageItems, resetToDefault, restoreFromTrash, setDesktopIconPosition, setDesktopWidgetPosition, setManyDesktopIconPositions, sortDesktop, trash, verifyEditKey, wallpaper],
+    [addToDock, createFolder, desktopIconPositions, desktopWidgetPositions, dock, editMode, emptyTrash, moveItemAcrossPages, moveItemIntoFolder, moveItemToPage, moveToTrash, pages, removeItem, reorderPageItems, renameFolder, resetToDefault, restoreFromTrash, setDesktopIconPosition, setDesktopWidgetPosition, setManyDesktopIconPositions, sortDesktop, trash, verifyEditKey, wallpaper],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

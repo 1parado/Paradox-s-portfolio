@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ContextMenu } from '@/components/ContextMenu';
 import { EditKeyModal } from '@/components/EditKeyModal';
 import { Folder } from '@/components/Folder';
@@ -19,7 +19,9 @@ import { MacWidgetStack } from '@/components/MacWidgetStack';
 import { MacWindow } from '@/components/MacWindow';
 import { PasswordModal } from '@/components/PasswordModal';
 import { SettingsPanel } from '@/components/SettingsPanel';
+import { Spotlight } from '@/components/Spotlight';
 import { WallpaperPicker } from '@/components/WallpaperPicker';
+import { findFolderById, isFolder } from '@/lib/folders';
 import { StoreProvider, usePortfolioStore } from '@/lib/store';
 import type { AppItem, DesktopIconPosition, FolderItem } from '@/lib/types';
 
@@ -115,6 +117,9 @@ function MacPortfolioInner() {
     sortDesktop,
     reorderPageItems,
     moveItemAcrossPages,
+    renameFolder,
+    moveItemIntoFolder,
+    moveItemToPage,
     removeItem,
     moveToTrash,
     restoreFromTrash,
@@ -133,15 +138,18 @@ function MacPortfolioInner() {
   const [showSettings, setShowSettings] = useState(false);
   const [showControlCenter, setShowControlCenter] = useState(false);
   const [showWallpaper, setShowWallpaper] = useState(false);
-  const [openFolder, setOpenFolder] = useState<FolderItem | null>(null);
   const [showFinder, setShowFinder] = useState(false);
   const [showMissionControl, setShowMissionControl] = useState(false);
   const [showTrash, setShowTrash] = useState(false);
+  const [showSpotlight, setShowSpotlight] = useState(false);
+  const [folderNavStack, setFolderNavStack] = useState<string[]>([]);
+  const [renameRequestId, setRenameRequestId] = useState<string | null>(null);
   const [desktopMenu, setDesktopMenu] = useState<{ x: number; y: number } | null>(null);
   const [viewport, setViewport] = useState({ width: 1440, height: 900 });
   const [draggingIconId, setDraggingIconId] = useState<string | null>(null);
   const [dockDropActive, setDockDropActive] = useState(false);
   const [trashDropActive, setTrashDropActive] = useState(false);
+  const [folderDropId, setFolderDropId] = useState<string | null>(null);
   const [selectedIconIds, setSelectedIconIds] = useState<string[]>([]);
   const [selection, setSelection] = useState<SelectionState | null>(null);
   const [groupDragOffset, setGroupDragOffset] = useState({ x: 0, y: 0 });
@@ -171,6 +179,44 @@ function MacPortfolioInner() {
   }, [desktopEntries, desktopIconPositions, viewport]);
   const widgetPosition = clampWidgetPosition(desktopWidgetPositions.summary ?? { x: 40, y: 368 }, viewport);
 
+  // 当前打开的文件夹路径（从根到当前层），由 pages 派生，重命名/移动后实时同步。
+  const folderPath = useMemo<FolderItem[]>(() => {
+    if (folderNavStack.length === 0) return [];
+    return folderNavStack
+      .map((id) => findFolderById(pages, id))
+      .filter((value): value is FolderItem => Boolean(value));
+  }, [folderNavStack, pages]);
+  const openFolder = folderPath[folderPath.length - 1] ?? null;
+
+  const openFolderById = useCallback((folder: FolderItem) => {
+    setFolderNavStack([folder.id]);
+  }, []);
+
+  const navigateIntoFolder = useCallback((folder: FolderItem) => {
+    setFolderNavStack((current) => {
+      const existing = current.indexOf(folder.id);
+      if (existing >= 0) return current.slice(0, existing + 1);
+      return [...current, folder.id];
+    });
+  }, []);
+
+  const closeFolder = useCallback(() => {
+    setFolderNavStack([]);
+    setRenameRequestId(null);
+  }, []);
+
+  const navigateToFolder = useCallback((folder: FolderItem | null) => {
+    if (!folder) {
+      closeFolder();
+      return;
+    }
+    setFolderNavStack((current) => {
+      const index = current.indexOf(folder.id);
+      if (index >= 0) return current.slice(0, index + 1);
+      return [folder.id];
+    });
+  }, [closeFolder]);
+
   const isPointInsideDock = (x: number, y: number) => {
     const dockElement = document.getElementById('mac-dock-dropzone');
     if (!dockElement) return false;
@@ -183,6 +229,20 @@ function MacPortfolioInner() {
     if (!trashElement) return false;
     const rect = trashElement.getBoundingClientRect();
     return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+  };
+
+  // 拖拽点是否落在某个桌面文件夹图标上（编辑模式下用于把应用拖入文件夹）。
+  const findFolderAtPoint = (x: number, y: number, excludeId?: string): string | null => {
+    const nodes = document.querySelectorAll<HTMLElement>('[data-folder-dropzone]');
+    for (const node of nodes) {
+      const id = node.dataset.folderDropzone;
+      if (!id || id === excludeId) continue;
+      const rect = node.getBoundingClientRect();
+      if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+        return id;
+      }
+    }
+    return null;
   };
 
   const addDraggedAppsToDock = (ids: string[]) => {
@@ -252,7 +312,7 @@ function MacPortfolioInner() {
       return;
     }
     if (app.type === 'folder') {
-      setOpenFolder(app as FolderItem);
+      openFolderById(app as FolderItem);
       return;
     }
     if (app.externalOnly && app.url) {
@@ -277,6 +337,14 @@ function MacPortfolioInner() {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        if (showSpotlight) {
+          setShowSpotlight(false);
+          return;
+        }
+        if (folderNavStack.length > 0) {
+          closeFolder();
+          return;
+        }
         if (activeWindow) {
           setWindows((current) => current.filter((window) => window.id !== activeWindow.id));
           return;
@@ -291,7 +359,10 @@ function MacPortfolioInner() {
         setShowMissionControl(false);
         setShowTrash(false);
         setActiveMobileApp(null);
-        setOpenFolder(null);
+      }
+      if ((event.metaKey || event.ctrlKey) && event.code === 'Space') {
+        event.preventDefault();
+        setShowSpotlight((value) => !value);
       }
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'e') {
         event.preventDefault();
@@ -308,7 +379,7 @@ function MacPortfolioInner() {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [activeWindow]);
+  }, [activeWindow, showSpotlight, folderNavStack, closeFolder]);
 
   return (
     <main className="relative min-h-dvh overflow-hidden bg-zinc-950 text-white">
@@ -363,6 +434,7 @@ function MacPortfolioInner() {
           }}
           onCleanUp={() => setDesktopIconPositions({})}
           onControlCenter={() => setShowControlCenter((value) => !value)}
+          onSpotlight={() => setShowSpotlight(true)}
           onMinimizeActive={() => {
             if (activeWindow) {
               setWindows((current) => current.map((item) => (
@@ -488,11 +560,17 @@ function MacPortfolioInner() {
           {desktopEntries.map(({ item, pageId, pageTitle }, index) => {
             const position = desktopIconPositionMap[item.id] ?? getDefaultDesktopPosition(index, viewport);
             const inActiveGroup = Boolean(draggingIconId && item.id !== draggingIconId && selectedIconSet.has(item.id) && selectedIconSet.has(draggingIconId));
+            const isFolderItem = isFolder(item);
+            const isFolderDropTarget = isFolderItem && folderDropId === item.id;
 
             return (
               <motion.div
                 key={`${pageId}-${item.id}`}
-                className="absolute cursor-default"
+                className={[
+                  'absolute cursor-default',
+                  isFolderDropTarget ? 'ring-2 ring-sky-200/70 rounded-2xl' : '',
+                ].join(' ')}
+                data-folder-dropzone={isFolderItem ? item.id : undefined}
                 style={{
                   left: position.x + (inActiveGroup ? groupDragOffset.x : 0),
                   top: position.y + (inActiveGroup ? groupDragOffset.y : 0),
@@ -516,6 +594,7 @@ function MacPortfolioInner() {
                   setGroupDragOffset({ x: info.offset.x, y: info.offset.y });
                   setDockDropActive(editMode && isPointInsideDock(info.point.x, info.point.y));
                   setTrashDropActive(editMode && isPointInsideTrash(info.point.x, info.point.y));
+                  setFolderDropId(editMode ? findFolderAtPoint(info.point.x, info.point.y, item.id) : null);
                 }}
                 onDragEnd={(_, info) => {
                   if (editMode && isPointInsideTrash(info.point.x, info.point.y)) {
@@ -523,6 +602,7 @@ function MacPortfolioInner() {
                     setGroupDragOffset({ x: 0, y: 0 });
                     setDockDropActive(false);
                     setTrashDropActive(false);
+                    setFolderDropId(null);
                     window.setTimeout(() => {
                       if (suppressOpenRef.current === item.id) suppressOpenRef.current = null;
                       setDraggingIconId((current) => (current === item.id ? null : current));
@@ -535,11 +615,31 @@ function MacPortfolioInner() {
                     setGroupDragOffset({ x: 0, y: 0 });
                     setDockDropActive(false);
                     setTrashDropActive(false);
+                    setFolderDropId(null);
                     window.setTimeout(() => {
                       if (suppressOpenRef.current === item.id) suppressOpenRef.current = null;
                       setDraggingIconId((current) => (current === item.id ? null : current));
                     }, 120);
                     return;
+                  }
+
+                  const dragIds = groupDragIdsRef.current.length > 0 ? groupDragIdsRef.current : [item.id];
+                  if (editMode) {
+                    const targetFolderId = findFolderAtPoint(info.point.x, info.point.y, item.id);
+                    if (targetFolderId) {
+                      // 仅移动不在目标文件夹子孙链上的项，避免循环（store 内还会再校验）
+                      const validIds = dragIds.filter((id) => id !== targetFolderId);
+                      validIds.forEach((id) => moveItemIntoFolder(id, targetFolderId));
+                      setGroupDragOffset({ x: 0, y: 0 });
+                      setDockDropActive(false);
+                      setTrashDropActive(false);
+                      setFolderDropId(null);
+                      window.setTimeout(() => {
+                        if (suppressOpenRef.current === item.id) suppressOpenRef.current = null;
+                        setDraggingIconId((current) => (current === item.id ? null : current));
+                      }, 120);
+                      return;
+                    }
                   }
 
                   const nextPositions = groupDragIdsRef.current.reduce<Record<string, DesktopIconPosition>>((acc, id) => {
@@ -559,6 +659,7 @@ function MacPortfolioInner() {
                   setGroupDragOffset({ x: 0, y: 0 });
                   setDockDropActive(false);
                   setTrashDropActive(false);
+                  setFolderDropId(null);
                   window.setTimeout(() => {
                     if (suppressOpenRef.current === item.id) suppressOpenRef.current = null;
                     setDraggingIconId((current) => (current === item.id ? null : current));
@@ -708,6 +809,14 @@ function MacPortfolioInner() {
             if (contextApp.pageId) removeItem(contextApp.pageId, contextApp.app.id);
             setContextApp(null);
           }}
+          onRename={() => {
+            const target = contextApp.app;
+            setContextApp(null);
+            if (target.type === 'folder') {
+              setFolderNavStack([target.id]);
+              setRenameRequestId(target.id);
+            }
+          }}
         />
       ) : null}
 
@@ -765,7 +874,31 @@ function MacPortfolioInner() {
         />
       ) : null}
 
-      {openFolder ? <Folder folder={openFolder} onClose={() => setOpenFolder(null)} onOpen={openApp} /> : null}
+      {openFolder && folderPath.length > 0 ? (
+        <Folder
+          path={folderPath}
+          editing={editMode}
+          autoRenameId={renameRequestId}
+          onClose={closeFolder}
+          onOpen={openApp}
+          onOpenFolder={navigateIntoFolder}
+          onNavigate={navigateToFolder}
+          onRename={(folderId, title) => renameFolder(folderId, title)}
+          onRemoveFromFolder={(itemId) => moveItemToPage(itemId, pages[0]?.id ?? 'page-1')}
+        />
+      ) : null}
+
+      <AnimatePresence>
+        {showSpotlight ? (
+          <Spotlight
+            pages={pages}
+            dock={dock}
+            onOpen={openApp}
+            onOpenFolder={openFolderById}
+            onClose={() => setShowSpotlight(false)}
+          />
+        ) : null}
+      </AnimatePresence>
     </main>
   );
 }

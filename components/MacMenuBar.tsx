@@ -37,6 +37,7 @@ type Props = {
   onSortDesktop: (mode: 'name' | 'kind' | 'date') => void;
   onCleanUp: () => void;
   onControlCenter: () => void;
+  onSpotlight: () => void;
   onMinimizeActive: () => void;
   onCloseActive: () => void;
   onSelectWindow: (id: string) => void;
@@ -56,6 +57,7 @@ export function MacMenuBar({
   onSortDesktop,
   onCleanUp,
   onControlCenter,
+  onSpotlight,
   onMinimizeActive,
   onCloseActive,
   onSelectWindow,
@@ -163,6 +165,7 @@ export function MacMenuBar({
       id: 'go',
       label: '前往',
       items: [
+        { label: 'Spotlight 搜索', shortcut: '⌘Space', onClick: () => run(onSpotlight) },
         { label: 'Finder', shortcut: '⌘⇧F', onClick: () => run(onFinder) },
         { label: '应用程序', onClick: () => run(onFinder) },
         { separator: true },
@@ -185,7 +188,7 @@ export function MacMenuBar({
       id: 'help',
       label: '帮助',
       items: [
-        { label: '搜索', disabled: true },
+        { label: 'Spotlight 搜索', shortcut: '⌘Space', onClick: () => run(onSpotlight) },
         { separator: true },
         { label: '关于 Paradox 桌面', onClick: () => run(onSettings) },
       ],
@@ -253,6 +256,12 @@ export function MacMenuBar({
       </nav>
 
       <div className="flex items-center gap-1 text-white/82">
+        <button type="button" className="rounded-md px-2 py-0.5 transition hover:bg-white/10" onClick={onSpotlight} aria-label="Spotlight 搜索" title="Spotlight 搜索 ⌘Space">
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.5-3.5" />
+          </svg>
+        </button>
         <button type="button" className="hidden rounded-md px-2 py-0.5 transition hover:bg-white/10 md:inline" onClick={onMissionControl} aria-label="Mission Control">
           ⌘⇳
         </button>

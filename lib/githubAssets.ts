@@ -13,6 +13,12 @@ const PHOTOS_DIR = 'uploads/photos';
 const PHOTOS_MANIFEST_PATH = 'uploads/photos.json';
 const WALLPAPERS_DIR = 'uploads/wallpapers';
 const WALLPAPER_CONFIG_PATH = 'uploads/wallpaper.json';
+const NOTEPAD_PATH = 'uploads/notepad.json';
+
+export type NotepadDoc = {
+  content: string;
+  updatedAt: number;
+};
 
 /**
  * 读取前端注入的 GitHub 配置。任一缺失返回 null，调用方需优雅降级。
@@ -266,4 +272,39 @@ export async function readSiteWallpaper(): Promise<string | null> {
     console.warn('读取站点壁纸失败', error);
     return null;
   }
+}
+
+/** 读取记事本内容；未配置或不存在返回 null。 */
+export async function readNotepad(): Promise<NotepadDoc | null> {
+  if (!isGithubUploadEnabled()) return null;
+  try {
+    const result = await apiGetContents(NOTEPAD_PATH);
+    if (!result.exists || !result.contentText) return null;
+    const parsed = JSON.parse(result.contentText);
+    if (typeof parsed === 'string') {
+      return { content: parsed, updatedAt: 0 };
+    }
+    if (parsed && typeof parsed.content === 'string') {
+      return { content: parsed.content, updatedAt: typeof parsed.updatedAt === 'number' ? parsed.updatedAt : 0 };
+    }
+    return null;
+  } catch (error) {
+    console.warn('读取记事本失败', error);
+    return null;
+  }
+}
+
+/** 把记事本内容写入 GitHub，返回写入时间戳。 */
+export async function saveNotepad(content: string): Promise<number> {
+  const result = await apiGetContents(NOTEPAD_PATH);
+  const updatedAt = Date.now();
+  const doc: NotepadDoc = { content, updatedAt };
+  const body = encodeBase64(JSON.stringify(doc, null, 2));
+  await apiPutContents(
+    NOTEPAD_PATH,
+    body,
+    `chore: update notepad (${content.length} chars)`,
+    result.exists ? result.sha : undefined,
+  );
+  return updatedAt;
 }
