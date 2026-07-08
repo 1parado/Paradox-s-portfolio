@@ -43,7 +43,7 @@ type StoreValue = {
   isEditKeyConfigured: () => boolean;
 };
 
-const STORAGE_KEY = 'paradox-macos-portfolio-v6';
+const STORAGE_KEY = 'paradox-macos-portfolio-v7';
 const StoreContext = createContext<StoreValue | null>(null);
 
 function isSameDockApp(left: AppItem, right: AppItem) {
