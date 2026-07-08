@@ -127,6 +127,7 @@ function MacPortfolioInner() {
     trash,
     resetToDefault,
     verifyEditKey,
+    isEditKeyConfigured,
   } = usePortfolioStore();
 
   const [windows, setWindows] = useState<WindowState[]>([]);
@@ -850,6 +851,7 @@ function MacPortfolioInner() {
 
       {showEditModal ? (
         <EditKeyModal
+          configured={isEditKeyConfigured()}
           onClose={() => setShowEditModal(false)}
           onSubmit={(value) => {
             const ok = verifyEditKey(value);

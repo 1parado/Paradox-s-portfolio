@@ -107,4 +107,3 @@ export const defaultDock: AppItem[] = [
 ];
 
 export const defaultWallpaper = wallpaperPresets[0].value;
-export const defaultEditKey = '2468';

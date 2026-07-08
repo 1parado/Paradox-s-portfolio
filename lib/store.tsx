@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { defaultDock, defaultEditKey, defaultPages, defaultWallpaper } from '@/lib/defaultData';
+import { defaultDock, defaultPages, defaultWallpaper } from '@/lib/defaultData';
 import { findFolderById, isDescendantFolder, isFolder } from '@/lib/folders';
 import { readSiteWallpaper } from '@/lib/githubAssets';
 import type { AppItem, DesktopIconPosition, HomePage, HomeItem } from '@/lib/types';
@@ -40,6 +40,7 @@ type StoreValue = {
   emptyTrash: () => void;
   resetToDefault: () => void;
   verifyEditKey: (input: string) => boolean;
+  isEditKeyConfigured: () => boolean;
 };
 
 const STORAGE_KEY = 'paradox-macos-portfolio-v6';
@@ -335,10 +336,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     window.localStorage.removeItem(STORAGE_KEY);
   }, []);
 
+  const resolveEditKey = useCallback(() => process.env.NEXT_PUBLIC_EDIT_KEY || process.env.NEXT_PUBLIC_EDIT_PASSCODE || '', []);
+
+  const isEditKeyConfigured = useCallback(() => resolveEditKey().length > 0, [resolveEditKey]);
+
   const verifyEditKey = useCallback((input: string) => {
-    const expected = process.env.NEXT_PUBLIC_EDIT_KEY || process.env.NEXT_PUBLIC_EDIT_PASSCODE || defaultEditKey;
+    const expected = resolveEditKey();
+    if (!expected) return false; // 未配置编辑密钥时一律拒绝，杜绝默认口令后门
     return input === expected;
-  }, []);
+  }, [resolveEditKey]);
 
   const value = useMemo(
     () => ({
@@ -368,8 +374,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       emptyTrash,
       resetToDefault,
       verifyEditKey,
+      isEditKeyConfigured,
     }),
-    [addToDock, createFolder, desktopIconPositions, desktopWidgetPositions, dock, editMode, emptyTrash, moveItemAcrossPages, moveItemIntoFolder, moveItemToPage, moveToTrash, pages, removeItem, reorderPageItems, renameFolder, resetToDefault, restoreFromTrash, setDesktopIconPosition, setDesktopWidgetPosition, setManyDesktopIconPositions, sortDesktop, trash, verifyEditKey, wallpaper],
+    [addToDock, createFolder, desktopIconPositions, desktopWidgetPositions, dock, editMode, emptyTrash, moveItemAcrossPages, moveItemIntoFolder, moveItemToPage, moveToTrash, pages, removeItem, reorderPageItems, renameFolder, resetToDefault, restoreFromTrash, setDesktopIconPosition, setDesktopWidgetPosition, setManyDesktopIconPositions, sortDesktop, trash, verifyEditKey, isEditKeyConfigured, wallpaper],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

@@ -30,6 +30,7 @@ function PhonePortfolioInner() {
     moveItemToPage,
     resetToDefault,
     verifyEditKey,
+    isEditKeyConfigured,
   } = usePortfolioStore();
 
   const [activeApp, setActiveApp] = useState<AppItem | null>(null);
@@ -201,6 +202,7 @@ function PhonePortfolioInner() {
 
       {showEditModal ? (
         <EditKeyModal
+          configured={isEditKeyConfigured()}
           onClose={() => setShowEditModal(false)}
           onSubmit={(value) => {
             const ok = verifyEditKey(value);
