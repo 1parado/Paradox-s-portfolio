@@ -8,14 +8,21 @@ type Props = {
   editing: boolean;
   runningIds: string[];
   minimizedIds: string[];
+  dropActive: boolean;
   onOpen: (app: AppItem) => void;
   onLongPress: (app: AppItem) => void;
 };
 
-export function MacDock({ apps, editing, runningIds, minimizedIds, onOpen, onLongPress }: Props) {
+export function MacDock({ apps, editing, runningIds, minimizedIds, dropActive, onOpen, onLongPress }: Props) {
   return (
     <div className="absolute bottom-4 left-1/2 z-40 hidden -translate-x-1/2 md:block">
-      <div className="relative flex items-end gap-2 rounded-[1.75rem] border border-white/25 bg-white/15 px-3.5 py-2.5 shadow-[0_22px_80px_rgba(0,0,0,0.42)] backdrop-blur-3xl">
+      <div
+        id="mac-dock-dropzone"
+        className={[
+          'relative flex min-w-[34rem] max-w-[calc(100vw-4rem)] items-end justify-center gap-3 overflow-x-auto rounded-[1.9rem] border px-5 py-3 shadow-[0_22px_80px_rgba(0,0,0,0.42)] backdrop-blur-3xl transition',
+          dropActive ? 'border-sky-200/75 bg-sky-300/20 ring-2 ring-sky-200/45' : 'border-white/25 bg-white/15',
+        ].join(' ')}
+      >
         <div className="pointer-events-none absolute inset-x-4 top-1 h-px bg-white/35" />
         {apps.map((app) => {
           const running = runningIds.includes(app.id);

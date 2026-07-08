@@ -69,7 +69,7 @@ export const defaultPages: HomePage[] = [
           external({ id: 'folder-prompt', title: 'Prompt', icon: '🧠', iconKey: 'prompt', color: 'from-yellow-400 to-orange-500', description: 'Prompt 工程案例集合。', url: 'https://github.com/1parado', externalOnly: true }),
         ],
       }),
-      external({ id: 'visual-lab', title: '可视化', icon: '📊', iconKey: 'chart', color: 'from-blue-400 to-cyan-500', description: '交互式数据可视化实验占位。', url: 'https://github.com/1parado', externalOnly: true }),
+      builtin({ id: 'voice-calendar', title: '语音日历', icon: '📅', iconKey: 'calendar', color: 'from-cyan-400 to-blue-600', description: '七牛云暑期实训项目演示入口。', builtinKey: 'voice-calendar', techStack: ['语音交互', '日历管理', '七牛云', '视频演示'] }),
     ],
   },
   {

@@ -16,6 +16,7 @@ const iconPaths: Partial<Record<AppIconKey, string[]>> = {
   blog: ['M5 4h14v16H5z', 'M8 8h8M8 12h8M8 16h5'],
   bookmark: ['M6 4h12v17l-6-4-6 4V4Z'],
   calculator: ['M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z', 'M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01'],
+  calendar: ['M7 3v4M17 3v4', 'M4 8h16', 'M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z', 'M8 12h3M8 16h3M14 12h2M14 16h2'],
   chart: ['M4 19V5', 'M4 19h16', 'M8 16v-5M12 16V8M16 16v-9'],
   design: ['M4 5h16v14H4z', 'M8 9h8M8 13h3M14 13h2'],
   folder: ['M3 6h7l2 2h9v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6Z'],

@@ -106,6 +106,8 @@ function MacPortfolioInner() {
     setDesktopIconPosition,
     setDesktopIconPositions,
     setDesktopWidgetPosition,
+    addToDock,
+    createFolder,
     reorderPageItems,
     moveItemAcrossPages,
     removeItem,
@@ -125,6 +127,7 @@ function MacPortfolioInner() {
   const [openFolder, setOpenFolder] = useState<FolderItem | null>(null);
   const [viewport, setViewport] = useState({ width: 1440, height: 900 });
   const [draggingIconId, setDraggingIconId] = useState<string | null>(null);
+  const [dockDropActive, setDockDropActive] = useState(false);
   const [selectedIconIds, setSelectedIconIds] = useState<string[]>([]);
   const [selection, setSelection] = useState<SelectionState | null>(null);
   const [groupDragOffset, setGroupDragOffset] = useState({ x: 0, y: 0 });
@@ -152,7 +155,22 @@ function MacPortfolioInner() {
     });
     return entries;
   }, [desktopEntries, desktopIconPositions, viewport]);
-  const widgetPosition = clampWidgetPosition(desktopWidgetPositions.summary ?? { x: 40, y: 244 }, viewport);
+  const widgetPosition = clampWidgetPosition(desktopWidgetPositions.summary ?? { x: 40, y: 368 }, viewport);
+
+  const isPointInsideDock = (x: number, y: number) => {
+    const dockElement = document.getElementById('mac-dock-dropzone');
+    if (!dockElement) return false;
+    const rect = dockElement.getBoundingClientRect();
+    return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+  };
+
+  const addDraggedAppsToDock = (ids: string[]) => {
+    const itemsById = new Map(desktopEntries.map(({ item }) => [item.id, item]));
+    ids.forEach((id) => {
+      const item = itemsById.get(id);
+      if (item) addToDock(item);
+    });
+  };
 
   const selectIconsInRect = (rect: Rect) => {
     const selected = desktopEntries
@@ -431,8 +449,20 @@ function MacPortfolioInner() {
                 }}
                 onDrag={(_, info) => {
                   setGroupDragOffset({ x: info.offset.x, y: info.offset.y });
+                  setDockDropActive(editMode && isPointInsideDock(info.point.x, info.point.y));
                 }}
                 onDragEnd={(_, info) => {
+                  if (editMode && isPointInsideDock(info.point.x, info.point.y)) {
+                    addDraggedAppsToDock(groupDragIdsRef.current.length > 0 ? groupDragIdsRef.current : [item.id]);
+                    setGroupDragOffset({ x: 0, y: 0 });
+                    setDockDropActive(false);
+                    window.setTimeout(() => {
+                      if (suppressOpenRef.current === item.id) suppressOpenRef.current = null;
+                      setDraggingIconId((current) => (current === item.id ? null : current));
+                    }, 120);
+                    return;
+                  }
+
                   const nextPositions = groupDragIdsRef.current.reduce<Record<string, DesktopIconPosition>>((acc, id) => {
                     const base = groupDragBaseRef.current[id] ?? desktopIconPositionMap[id];
                     acc[id] = clampDesktopPosition({
@@ -448,6 +478,7 @@ function MacPortfolioInner() {
                     }, viewport),
                   });
                   setGroupDragOffset({ x: 0, y: 0 });
+                  setDockDropActive(false);
                   window.setTimeout(() => {
                     if (suppressOpenRef.current === item.id) suppressOpenRef.current = null;
                     setDraggingIconId((current) => (current === item.id ? null : current));
@@ -493,6 +524,7 @@ function MacPortfolioInner() {
           editing={editMode}
           runningIds={runningIds}
           minimizedIds={minimizedIds}
+          dropActive={dockDropActive}
           onOpen={openApp}
           onLongPress={(app) => setContextApp({ app })}
         />
@@ -550,6 +582,10 @@ function MacPortfolioInner() {
           }}
           onExitEdit={() => {
             setEditMode(false);
+            setShowSettings(false);
+          }}
+          onCreateFolder={() => {
+            createFolder();
             setShowSettings(false);
           }}
           onWallpaper={() => {

@@ -31,7 +31,7 @@ type Props = {
 function PageDrop({ pageId, children }: { pageId: string; children: React.ReactNode }) {
   const { setNodeRef } = useDroppable({ id: `page:${pageId}` });
   return (
-    <div ref={setNodeRef} className="h-full w-full shrink-0 basis-full">
+    <div ref={setNodeRef} className="h-full min-w-full shrink-0">
       {children}
     </div>
   );
@@ -82,6 +82,10 @@ export function HomeScreen({ pages, dock, editing, onOpen, onLongPress, onReorde
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [pageCount]);
 
+  useEffect(() => {
+    setPageIndex((value) => Math.min(value, Math.max(0, pageCount - 1)));
+  }, [pageCount]);
+
   const findPageForItem = (itemId: string) => pages.find((page) => page.items.some((item) => item.id === itemId));
 
   const onDragStart = (_event: DragStartEvent) => {
@@ -130,23 +134,25 @@ export function HomeScreen({ pages, dock, editing, onOpen, onLongPress, onReorde
       <div className="relative flex h-full flex-col overflow-hidden">
         <StatusBar editing={editing} />
 
-        <motion.div
-          className="mt-2 flex flex-1"
-          animate={{ x: `${-pageIndex * 100}%` }}
-          drag={editing ? false : 'x'}
-          dragConstraints={{ left: -(pageCount - 1) * 320, right: 0 }}
-          onDragEnd={(_, info) => {
-            if (info.offset.x < -80) setPageIndex((value) => Math.min(value + 1, pageCount - 1));
-            if (info.offset.x > 80) setPageIndex((value) => Math.max(value - 1, 0));
-          }}
-          transition={{ type: 'spring', stiffness: 240, damping: 28 }}
-        >
-          {pages.map((page) => (
-            <PageDrop key={page.id} pageId={page.id}>
-              <AppGrid page={page} editing={editing} onOpen={onOpen} onLongPress={(app) => onLongPress(app, page.id)} />
-            </PageDrop>
-          ))}
-        </motion.div>
+        <div className="mt-2 min-h-0 flex-1 overflow-hidden">
+          <motion.div
+            className="flex h-full w-full"
+            animate={{ x: `${-pageIndex * 100}%` }}
+            drag={editing ? false : 'x'}
+            dragConstraints={{ left: 0, right: 0 }}
+            onDragEnd={(_, info) => {
+              if (info.offset.x < -80) setPageIndex((value) => Math.min(value + 1, pageCount - 1));
+              if (info.offset.x > 80) setPageIndex((value) => Math.max(value - 1, 0));
+            }}
+            transition={{ type: 'spring', stiffness: 240, damping: 28 }}
+          >
+            {pages.map((page) => (
+              <PageDrop key={page.id} pageId={page.id}>
+                <AppGrid page={page} editing={editing} onOpen={onOpen} onLongPress={(app) => onLongPress(app, page.id)} />
+              </PageDrop>
+            ))}
+          </motion.div>
+        </div>
 
         <div className="mb-3 mt-1 flex items-center justify-center gap-2">
           {pages.map((page, index) => (

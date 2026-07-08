@@ -6,14 +6,14 @@ const repos = [
     url: 'https://github.com/alibaba/open-code-review',
     stars: '10.1k',
     role: 'AI 代码审查方向开源项目',
-    techStack: ['TypeScript', 'Node.js', 'GitHub Actions', 'LLM', 'Code Review'],
+    techStack: ['Go', 'TypeScript', 'LLM', 'Code Review'],
   },
   {
     name: 'Monica-Pass/Monica',
     url: 'https://github.com/Monica-Pass/Monica',
     stars: '832',
     role: '跨平台密码管理器与安全工具',
-    techStack: ['Rust', 'Tauri', 'TypeScript', 'React', '加密存储'],
+    techStack: ['Kotlin', '加密存储'],
   },
 ];
 

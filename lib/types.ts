@@ -7,6 +7,7 @@ export type AppIconKey =
   | 'blog'
   | 'bookmark'
   | 'calculator'
+  | 'calendar'
   | 'chart'
   | 'design'
   | 'folder'
