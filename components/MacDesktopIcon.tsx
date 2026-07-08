@@ -30,7 +30,7 @@ export function MacDesktopIcon({ app, editing, compact = false, selected = false
   return (
     <motion.button
       type="button"
-      layoutId={`app-${app.id}`}
+      layoutId={compact ? undefined : `desktop-window-${app.id}`}
       aria-label={app.title}
       className={[
         'group flex flex-col items-center rounded-2xl p-1 text-center text-white outline-none transition hover:bg-white/10',
