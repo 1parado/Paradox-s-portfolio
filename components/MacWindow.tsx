@@ -20,6 +20,7 @@ export function MacWindow({ app, zIndex, minimized, focused, onFocus, onClose, o
   const [refreshKey, setRefreshKey] = useState(0);
   const [iframeError, setIframeError] = useState(false);
   const Builtin = useMemo(() => getBuiltinApp(app.builtinKey), [app.builtinKey]);
+  const builtinShellClass = app.builtinKey === 'calculator' ? 'mx-auto h-full max-w-md' : 'h-full w-full';
 
   useEffect(() => {
     setIframeError(false);
@@ -79,7 +80,7 @@ export function MacWindow({ app, zIndex, minimized, focused, onFocus, onClose, o
 
       <div className="min-h-0 flex-1 bg-zinc-950/35 p-3 backdrop-blur-xl">
         {Builtin ? (
-          <div className="mx-auto h-full max-w-md">
+          <div className={builtinShellClass}>
             <Builtin />
           </div>
         ) : app.url && !iframeError ? (

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { AppGlyph } from '@/components/AppGlyph';
 import type { AppItem } from '@/lib/types';
 
 type Props = {
@@ -62,7 +63,7 @@ export function AppIcon({ app, editing, onOpen, onLongPress }: Props) {
           editing ? 'app-jiggle' : '',
         ].join(' ')}
       >
-        {app.icon}
+        <AppGlyph iconKey={app.iconKey} fallback={app.icon} className="h-9 w-9" />
       </div>
       <span className="line-clamp-2 text-xs font-medium text-white/90">{app.title}</span>
     </motion.button>

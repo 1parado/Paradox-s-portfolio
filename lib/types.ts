@@ -36,6 +36,8 @@ export type AppItem = {
   type: AppKind;
   builtinKey?: string;
   password?: string;
+  passwordHint?: string;
+  techStack?: string[];
   badge?: string;
   externalOnly?: boolean;
 };

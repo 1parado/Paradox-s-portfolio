@@ -5,6 +5,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ContextMenu } from '@/components/ContextMenu';
 import { EditKeyModal } from '@/components/EditKeyModal';
 import { Folder } from '@/components/Folder';
+import { HomeScreen } from '@/components/HomeScreen';
+import { InAppBrowser } from '@/components/InAppBrowser';
 import { MacControlCenter } from '@/components/MacControlCenter';
 import { MacDesktopIcon } from '@/components/MacDesktopIcon';
 import { MacDock } from '@/components/MacDock';
@@ -104,6 +106,7 @@ function MacPortfolioInner() {
     setDesktopIconPosition,
     setDesktopIconPositions,
     setDesktopWidgetPosition,
+    reorderPageItems,
     moveItemAcrossPages,
     removeItem,
     resetToDefault,
@@ -111,6 +114,7 @@ function MacPortfolioInner() {
   } = usePortfolioStore();
 
   const [windows, setWindows] = useState<WindowState[]>([]);
+  const [activeMobileApp, setActiveMobileApp] = useState<AppItem | null>(null);
   const [topZ, setTopZ] = useState(80);
   const [passwordApp, setPasswordApp] = useState<AppItem | null>(null);
   const [contextApp, setContextApp] = useState<{ app: AppItem; pageId?: string } | null>(null);
@@ -207,6 +211,10 @@ function MacPortfolioInner() {
       window.open(app.url, app.url.startsWith('mailto:') ? '_self' : '_blank', 'noopener,noreferrer');
       return;
     }
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setActiveMobileApp(app);
+      return;
+    }
     openWindow(app);
   };
 
@@ -231,6 +239,7 @@ function MacPortfolioInner() {
         setShowSettings(false);
         setShowControlCenter(false);
         setShowWallpaper(false);
+        setActiveMobileApp(null);
         setOpenFolder(null);
       }
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'e') {
@@ -253,20 +262,24 @@ function MacPortfolioInner() {
       <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/30 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-black/45 to-transparent" />
 
-      <section className="relative z-10 flex min-h-screen items-center justify-center p-6 md:hidden">
-        <div className="max-w-sm rounded-[1.75rem] border border-white/15 bg-zinc-950/72 p-6 text-center shadow-2xl backdrop-blur-2xl">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-3xl text-zinc-950">⌘</div>
-          <h1 className="text-2xl font-semibold tracking-tight">请在桌面端打开</h1>
-          <p className="mt-3 text-sm leading-6 text-white/65">
-            这个版本按 macOS 桌面交互设计，包含窗口、Dock、菜单栏和桌面图标。移动端保留快捷访问入口。
-          </p>
-          <div className="mt-6 grid gap-3">
-            <a className="rounded-xl bg-white px-4 py-3 text-sm font-medium text-zinc-950" href="https://1parado.github.io/">
-              打开博客
-            </a>
-            <a className="rounded-xl bg-white/10 px-4 py-3 text-sm font-medium text-white" href="https://github.com/1parado">
-              打开 GitHub
-            </a>
+      <section className="relative z-10 min-h-screen md:hidden">
+        <div className="mx-auto flex min-h-screen w-full items-center justify-center bg-black sm:px-5 sm:py-8">
+          <div className="relative h-screen w-screen overflow-hidden bg-black shadow-phone sm:h-[860px] sm:w-[430px] sm:rounded-[3.2rem] sm:border sm:border-white/10">
+            <div className="absolute left-1/2 top-3 z-20 hidden h-8 w-36 -translate-x-1/2 rounded-full bg-black/80 sm:block" />
+            <div className="absolute inset-0" style={{ background: wallpaper }} />
+            <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(255,255,255,0.18),transparent_26%,rgba(0,0,0,0.26)_74%),linear-gradient(0deg,rgba(0,0,0,0.24),rgba(255,255,255,0.04))] backdrop-blur-[1px]" />
+            <div className="relative z-10 h-full">
+              <HomeScreen
+                pages={pages}
+                dock={dock}
+                editing={editMode}
+                onOpen={openApp}
+                onLongPress={(app, pageId) => setContextApp({ app, pageId })}
+                onReorder={reorderPageItems}
+                onMoveItem={moveItemAcrossPages}
+              />
+            </div>
+            <InAppBrowser app={activeMobileApp} onClose={() => setActiveMobileApp(null)} />
           </div>
         </div>
       </section>
