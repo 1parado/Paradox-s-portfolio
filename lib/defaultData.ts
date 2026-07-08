@@ -80,7 +80,7 @@ export const defaultPages: HomePage[] = [
       external({ id: 'playground', title: 'Playground', icon: '🧪', iconKey: 'lab', color: 'from-green-400 to-emerald-600', description: '一些随手做的小实验。', url: 'https://1parado.github.io/' }),
       external({ id: 'automation', title: '自动化', icon: '⚡', iconKey: 'automation', color: 'from-lime-300 to-teal-500', description: '脚本、工作流和效率工具占位。', url: 'https://github.com/1parado', externalOnly: true }),
       external({ id: 'writing', title: '写作', icon: '📚', iconKey: 'writing', color: 'from-amber-300 to-red-500', description: '文章、方法论和项目复盘。', url: 'https://1parado.github.io/' }),
-      external({ id: 'ui-notes', title: '界面札记', icon: '🧩', iconKey: 'note', color: 'from-sky-400 to-indigo-500', description: '界面模式和交互观察占位。', url: 'https://1parado.github.io/' }),
+      external({ id: 'mini-world', title: 'Mini world', icon: '🌐', color: 'from-sky-400 to-indigo-500', description: 'Mini world 项目演示。', url: 'https://1parado.github.io/mini-world/', techStack: ['JavaScript'] }),
       external({ id: 'archive', title: 'Archive', icon: '🗄️', iconKey: 'archive', color: 'from-neutral-400 to-stone-700', description: '旧项目和归档材料入口。', url: 'https://github.com/1parado', externalOnly: true }),
     ],
   },
@@ -101,7 +101,6 @@ export const defaultPages: HomePage[] = [
 export const defaultDock: AppItem[] = [
   external({ id: 'dock-blog', title: '博客', icon: '✍️', iconKey: 'blog', color: 'from-orange-400 to-rose-500', description: '博客快捷入口。', url: 'https://1parado.github.io/' }),
   external({ id: 'dock-about', title: '关于', icon: '👤', iconKey: 'about', color: 'from-sky-400 to-indigo-600', description: '关于 Paradox / 李家乐。', url: 'https://1parado.github.io/' }),
-  external({ id: 'dock-github', title: 'GitHub', icon: '🐙', iconKey: 'github', color: 'from-neutral-500 to-neutral-950', description: 'GitHub 快捷入口。', url: 'https://github.com/1parado', externalOnly: true }),
   builtin({ id: 'dock-settings', title: '设置', icon: '⚙️', iconKey: 'settings', color: 'from-neutral-400 to-neutral-700', description: '壁纸、编辑模式与重置。', builtinKey: 'settings' }),
   builtin({ id: 'dock-photos', title: '照片', icon: '🖼️', iconKey: 'photo', color: 'from-pink-400 to-rose-500', description: '相册：进入整理模式后可上传图片，存入 GitHub。', builtinKey: 'photo' }),
 ];

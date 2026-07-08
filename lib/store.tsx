@@ -38,7 +38,7 @@ type StoreValue = {
   verifyEditKey: (input: string) => boolean;
 };
 
-const STORAGE_KEY = 'paradox-macos-portfolio-v5';
+const STORAGE_KEY = 'paradox-macos-portfolio-v6';
 const StoreContext = createContext<StoreValue | null>(null);
 
 function isSameDockApp(left: AppItem, right: AppItem) {
