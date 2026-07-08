@@ -24,6 +24,7 @@ function PhonePortfolioInner() {
     reorderPageItems,
     moveItemAcrossPages,
     removeItem,
+    createFolder,
     resetToDefault,
     verifyEditKey,
   } = usePortfolioStore();
@@ -153,6 +154,10 @@ function PhonePortfolioInner() {
           }}
           onExitEdit={() => {
             setEditMode(false);
+            setShowSettings(false);
+          }}
+          onCreateFolder={() => {
+            createFolder();
             setShowSettings(false);
           }}
           onWallpaper={() => {

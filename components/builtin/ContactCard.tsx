@@ -12,8 +12,8 @@ export function ContactCard() {
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
-        <p className="text-sm text-white/58">可通过这个邮箱联系 Paradox。</p>
-        <p className="mt-2 break-all text-xl font-semibold text-white">Paradox联系邮箱2825171479@qq.com</p>
+        <p className="text-sm text-white/58">可通过这个邮箱联系我</p>
+        <p className="mt-2 break-all text-xl font-semibold text-white">联系邮箱:2825171479@qq.com</p>
       </div>
     </div>
   );
