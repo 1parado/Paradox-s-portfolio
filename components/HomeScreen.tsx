@@ -130,7 +130,7 @@ export function HomeScreen({ pages, dock, editing, onOpen, onLongPress, onReorde
   const onDragCancel = () => setDragging(false);
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={onDragCancel}>
+    <DndContext id="home-screen-dnd" sensors={sensors} collisionDetection={closestCenter} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={onDragCancel}>
       <div className="relative flex h-full flex-col overflow-hidden">
         <StatusBar editing={editing} />
 

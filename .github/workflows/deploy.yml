@@ -19,6 +19,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NEXT_PUBLIC_EDIT_KEY: ${{ secrets.EDIT_PASSCODE }}
+      NEXT_PUBLIC_GITHUB_OWNER: 1parado
+      NEXT_PUBLIC_GITHUB_REPO: Paradox-s-portfolio
+      NEXT_PUBLIC_GITHUB_BRANCH: main
+      NEXT_PUBLIC_GITHUB_TOKEN: ${{ secrets.UPLOAD_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
