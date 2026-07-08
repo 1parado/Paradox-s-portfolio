@@ -9,8 +9,12 @@ import { HomeScreen } from '@/components/HomeScreen';
 import { InAppBrowser } from '@/components/InAppBrowser';
 import { MacControlCenter } from '@/components/MacControlCenter';
 import { MacDesktopIcon } from '@/components/MacDesktopIcon';
+import { MacDesktopMenu } from '@/components/MacDesktopMenu';
 import { MacDock } from '@/components/MacDock';
+import { MacFinder } from '@/components/MacFinder';
 import { MacMenuBar } from '@/components/MacMenuBar';
+import { MacMissionControl } from '@/components/MacMissionControl';
+import { MacTrashPanel } from '@/components/MacTrashPanel';
 import { MacWidgetStack } from '@/components/MacWidgetStack';
 import { MacWindow } from '@/components/MacWindow';
 import { PasswordModal } from '@/components/PasswordModal';
@@ -108,9 +112,14 @@ function MacPortfolioInner() {
     setDesktopWidgetPosition,
     addToDock,
     createFolder,
+    sortDesktop,
     reorderPageItems,
     moveItemAcrossPages,
     removeItem,
+    moveToTrash,
+    restoreFromTrash,
+    emptyTrash,
+    trash,
     resetToDefault,
     verifyEditKey,
   } = usePortfolioStore();
@@ -125,9 +134,14 @@ function MacPortfolioInner() {
   const [showControlCenter, setShowControlCenter] = useState(false);
   const [showWallpaper, setShowWallpaper] = useState(false);
   const [openFolder, setOpenFolder] = useState<FolderItem | null>(null);
+  const [showFinder, setShowFinder] = useState(false);
+  const [showMissionControl, setShowMissionControl] = useState(false);
+  const [showTrash, setShowTrash] = useState(false);
+  const [desktopMenu, setDesktopMenu] = useState<{ x: number; y: number } | null>(null);
   const [viewport, setViewport] = useState({ width: 1440, height: 900 });
   const [draggingIconId, setDraggingIconId] = useState<string | null>(null);
   const [dockDropActive, setDockDropActive] = useState(false);
+  const [trashDropActive, setTrashDropActive] = useState(false);
   const [selectedIconIds, setSelectedIconIds] = useState<string[]>([]);
   const [selection, setSelection] = useState<SelectionState | null>(null);
   const [groupDragOffset, setGroupDragOffset] = useState({ x: 0, y: 0 });
@@ -164,12 +178,28 @@ function MacPortfolioInner() {
     return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
   };
 
+  const isPointInsideTrash = (x: number, y: number) => {
+    const trashElement = document.getElementById('mac-trash-dropzone');
+    if (!trashElement) return false;
+    const rect = trashElement.getBoundingClientRect();
+    return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+  };
+
   const addDraggedAppsToDock = (ids: string[]) => {
     const itemsById = new Map(desktopEntries.map(({ item }) => [item.id, item]));
     ids.forEach((id) => {
       const item = itemsById.get(id);
       if (item) addToDock(item);
     });
+  };
+
+  const removeDraggedApps = (ids: string[]) => {
+    const pageByItemId = new Map(desktopEntries.map(({ item, pageId }) => [item.id, pageId]));
+    ids.forEach((id) => {
+      const pageId = pageByItemId.get(id);
+      if (pageId) moveToTrash(pageId, id);
+    });
+    setSelectedIconIds([]);
   };
 
   const selectIconsInRect = (rect: Rect) => {
@@ -257,6 +287,9 @@ function MacPortfolioInner() {
         setShowSettings(false);
         setShowControlCenter(false);
         setShowWallpaper(false);
+        setShowFinder(false);
+        setShowMissionControl(false);
+        setShowTrash(false);
         setActiveMobileApp(null);
         setOpenFolder(null);
       }
@@ -268,21 +301,25 @@ function MacPortfolioInner() {
         event.preventDefault();
         setShowSettings(true);
       }
+      if (event.key === 'F3' || ((event.metaKey || event.ctrlKey) && event.key === 'ArrowUp')) {
+        event.preventDefault();
+        setShowMissionControl((value) => !value);
+      }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [activeWindow]);
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-zinc-950 text-white">
+    <main className="relative min-h-dvh overflow-hidden bg-zinc-950 text-white">
       <div className="absolute inset-0" style={{ background: wallpaper }} />
       <div className="absolute inset-0 bg-[linear-gradient(125deg,rgba(255,255,255,0.11),transparent_22%,rgba(0,0,0,0.28)_64%,rgba(0,0,0,0.48)),linear-gradient(0deg,rgba(0,0,0,0.26),rgba(255,255,255,0.04))]" />
       <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/30 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-black/45 to-transparent" />
 
-      <section className="relative z-10 min-h-screen md:hidden">
-        <div className="mx-auto flex min-h-screen w-full items-center justify-center bg-black sm:px-5 sm:py-8">
-          <div className="relative h-screen w-screen overflow-hidden bg-black shadow-phone sm:h-[860px] sm:w-[430px] sm:rounded-[3.2rem] sm:border sm:border-white/10">
+      <section className="relative z-10 min-h-dvh md:hidden">
+        <div className="mx-auto flex min-h-dvh w-full items-center justify-center bg-black sm:px-5 sm:py-8">
+          <div className="relative h-dvh w-screen overflow-hidden bg-black shadow-phone sm:h-[860px] sm:w-[430px] sm:rounded-[3.2rem] sm:border sm:border-white/10">
             <div className="absolute left-1/2 top-3 z-20 hidden h-8 w-36 -translate-x-1/2 rounded-full bg-black/80 sm:block" />
             <div className="absolute inset-0" style={{ background: wallpaper }} />
             <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(255,255,255,0.18),transparent_26%,rgba(0,0,0,0.26)_74%),linear-gradient(0deg,rgba(0,0,0,0.24),rgba(255,255,255,0.04))] backdrop-blur-[1px]" />
@@ -305,7 +342,10 @@ function MacPortfolioInner() {
       <section className="relative z-10 hidden min-h-screen md:block">
         <MacMenuBar
           activeTitle={activeWindow?.app.title}
+          activeApp={activeWindow?.app ?? null}
           editing={editMode}
+          windows={windows.map((window) => ({ id: window.id, title: window.app.title }))}
+          onFinder={() => setShowFinder(true)}
           onSettings={() => setShowSettings(true)}
           onWallpaper={() => setShowWallpaper(true)}
           onEdit={() => {
@@ -315,7 +355,27 @@ function MacPortfolioInner() {
             }
             setShowEditModal(true);
           }}
+          onCreateFolder={() => createFolder()}
+          onMissionControl={() => setShowMissionControl(true)}
+          onSortDesktop={(mode) => {
+            sortDesktop(mode);
+            setDesktopIconPositions({});
+          }}
+          onCleanUp={() => setDesktopIconPositions({})}
           onControlCenter={() => setShowControlCenter((value) => !value)}
+          onMinimizeActive={() => {
+            if (activeWindow) {
+              setWindows((current) => current.map((item) => (
+                item.id === activeWindow.id ? { ...item, minimized: true } : item
+              )));
+            }
+          }}
+          onCloseActive={() => {
+            if (activeWindow) {
+              setWindows((current) => current.filter((item) => item.id !== activeWindow.id));
+            }
+          }}
+          onSelectWindow={(id) => focusWindow(id)}
         />
 
         {showControlCenter ? (
@@ -372,6 +432,11 @@ function MacPortfolioInner() {
 
         <div
           className="absolute inset-0 z-10"
+          onContextMenu={(event) => {
+            if (event.target !== event.currentTarget) return;
+            event.preventDefault();
+            setDesktopMenu({ x: event.clientX, y: event.clientY });
+          }}
           onPointerDown={(event) => {
             if (event.button !== 0 || event.target !== event.currentTarget) return;
             event.currentTarget.setPointerCapture(event.pointerId);
@@ -450,12 +515,26 @@ function MacPortfolioInner() {
                 onDrag={(_, info) => {
                   setGroupDragOffset({ x: info.offset.x, y: info.offset.y });
                   setDockDropActive(editMode && isPointInsideDock(info.point.x, info.point.y));
+                  setTrashDropActive(editMode && isPointInsideTrash(info.point.x, info.point.y));
                 }}
                 onDragEnd={(_, info) => {
+                  if (editMode && isPointInsideTrash(info.point.x, info.point.y)) {
+                    removeDraggedApps(groupDragIdsRef.current.length > 0 ? groupDragIdsRef.current : [item.id]);
+                    setGroupDragOffset({ x: 0, y: 0 });
+                    setDockDropActive(false);
+                    setTrashDropActive(false);
+                    window.setTimeout(() => {
+                      if (suppressOpenRef.current === item.id) suppressOpenRef.current = null;
+                      setDraggingIconId((current) => (current === item.id ? null : current));
+                    }, 120);
+                    return;
+                  }
+
                   if (editMode && isPointInsideDock(info.point.x, info.point.y)) {
                     addDraggedAppsToDock(groupDragIdsRef.current.length > 0 ? groupDragIdsRef.current : [item.id]);
                     setGroupDragOffset({ x: 0, y: 0 });
                     setDockDropActive(false);
+                    setTrashDropActive(false);
                     window.setTimeout(() => {
                       if (suppressOpenRef.current === item.id) suppressOpenRef.current = null;
                       setDraggingIconId((current) => (current === item.id ? null : current));
@@ -479,6 +558,7 @@ function MacPortfolioInner() {
                   });
                   setGroupDragOffset({ x: 0, y: 0 });
                   setDockDropActive(false);
+                  setTrashDropActive(false);
                   window.setTimeout(() => {
                     if (suppressOpenRef.current === item.id) suppressOpenRef.current = null;
                     setDraggingIconId((current) => (current === item.id ? null : current));
@@ -502,6 +582,22 @@ function MacPortfolioInner() {
           })}
         </div>
 
+        {desktopMenu ? (
+          <MacDesktopMenu
+            x={desktopMenu.x}
+            y={desktopMenu.y}
+            onNewFolder={() => createFolder()}
+            onCleanUp={() => setDesktopIconPositions({})}
+            onSort={(mode) => {
+              sortDesktop(mode);
+              setDesktopIconPositions({});
+            }}
+            onWallpaper={() => setShowWallpaper(true)}
+            onSettings={() => setShowSettings(true)}
+            onClose={() => setDesktopMenu(null)}
+          />
+        ) : null}
+
         <AnimatePresence>
           {windows.map((window) => (
             <MacWindow
@@ -515,6 +611,7 @@ function MacPortfolioInner() {
               onMinimize={() => setWindows((current) => current.map((item) => (
                 item.id === window.id ? { ...item, minimized: true } : item
               )))}
+              onDragToTop={() => setShowMissionControl(true)}
             />
           ))}
         </AnimatePresence>
@@ -525,8 +622,11 @@ function MacPortfolioInner() {
           runningIds={runningIds}
           minimizedIds={minimizedIds}
           dropActive={dockDropActive}
+          trashActive={trashDropActive}
+          trashCount={trash.length}
           onOpen={openApp}
           onLongPress={(app) => setContextApp({ app })}
+          onOpenTrash={() => setShowTrash(true)}
         />
       </section>
 
@@ -540,6 +640,45 @@ function MacPortfolioInner() {
           }}
         />
       ) : null}
+
+      {showFinder ? (
+        <MacFinder
+          pages={pages}
+          dock={dock}
+          onClose={() => setShowFinder(false)}
+          onOpen={(app) => {
+            setShowFinder(false);
+            openApp(app);
+          }}
+        />
+      ) : null}
+
+      <AnimatePresence>
+        {showMissionControl ? (
+          <MacMissionControl
+            windows={windows}
+            onClose={(id) => setWindows((current) => current.filter((item) => item.id !== id))}
+            onCloseAll={() => setWindows([])}
+            onCloseMissionControl={() => setShowMissionControl(false)}
+            onSelect={(id) => {
+              focusWindow(id);
+              setShowMissionControl(false);
+            }}
+          />
+        ) : null}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showTrash ? (
+          <MacTrashPanel
+            trash={trash}
+            onClose={() => setShowTrash(false)}
+            onRestore={(itemId) => restoreFromTrash(itemId)}
+            onEmpty={() => emptyTrash()}
+            onOpen={(app) => openApp(app)}
+          />
+        ) : null}
+      </AnimatePresence>
 
       {contextApp ? (
         <ContextMenu

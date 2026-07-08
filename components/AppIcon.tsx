@@ -27,7 +27,7 @@ export function AppIcon({ app, editing, onOpen, onLongPress }: Props) {
 
   return (
     <motion.button
-      layoutId={`app-${app.id}`}
+      layoutId={`mobile-app-${app.id}`}
       type="button"
       aria-label={app.title}
       onClick={() => {

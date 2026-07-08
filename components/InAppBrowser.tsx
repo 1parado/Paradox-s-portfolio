@@ -25,7 +25,7 @@ export function InAppBrowser({ app, onClose }: Props) {
       {app ? (
         <motion.div
           key={app.id}
-          layoutId={`app-${app.id}`}
+          layoutId={`mobile-app-${app.id}`}
           className="absolute inset-0 z-30 flex flex-col bg-slate-950 text-white"
           initial={{ opacity: 0.5, scale: 0.92 }}
           animate={{ opacity: 1, scale: 1 }}

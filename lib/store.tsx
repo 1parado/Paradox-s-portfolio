@@ -16,6 +16,7 @@ type StoreValue = {
   dock: AppItem[];
   wallpaper: string;
   editMode: boolean;
+  trash: AppItem[];
   desktopIconPositions: Record<string, DesktopIconPosition>;
   desktopWidgetPositions: Record<string, DesktopIconPosition>;
   setWallpaper: (value: string) => void;
@@ -25,14 +26,18 @@ type StoreValue = {
   setDesktopWidgetPosition: (widgetId: string, position: DesktopIconPosition) => void;
   addToDock: (app: AppItem) => void;
   createFolder: (pageId?: string) => void;
+  sortDesktop: (mode: 'name' | 'kind' | 'date') => void;
   reorderPageItems: (pageId: string, items: HomePage['items']) => void;
   moveItemAcrossPages: (fromPageId: string, toPageId: string, itemId: string, targetIndex: number) => void;
   removeItem: (pageId: string, itemId: string) => void;
+  moveToTrash: (pageId: string, itemId: string) => void;
+  restoreFromTrash: (itemId: string) => void;
+  emptyTrash: () => void;
   resetToDefault: () => void;
   verifyEditKey: (input: string) => boolean;
 };
 
-const STORAGE_KEY = 'paradox-macos-portfolio-v4';
+const STORAGE_KEY = 'paradox-macos-portfolio-v5';
 const StoreContext = createContext<StoreValue | null>(null);
 
 function isSameDockApp(left: AppItem, right: AppItem) {
@@ -42,11 +47,20 @@ function isSameDockApp(left: AppItem, right: AppItem) {
   return left.title === right.title && left.type === right.type;
 }
 
+function hasUsablePages(value: unknown): value is HomePage[] {
+  return Array.isArray(value) && value.length > 0 && value.some((page) => Array.isArray(page?.items) && page.items.length > 0);
+}
+
+function hasUsableDock(value: unknown): value is AppItem[] {
+  return Array.isArray(value) && value.length > 0;
+}
+
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [pages, setPages] = useState<HomePage[]>(defaultPages);
   const [dock, setDock] = useState<AppItem[]>(defaultDock);
   const [wallpaper, setWallpaper] = useState(defaultWallpaper);
   const [editMode, setEditMode] = useState(false);
+  const [trash, setTrash] = useState<AppItem[]>([]);
   const [desktopIconPositions, setDesktopIconPositions] = useState<Record<string, DesktopIconPosition>>({});
   const [desktopWidgetPositions, setDesktopWidgetPositions] = useState<Record<string, DesktopIconPosition>>({});
 
@@ -55,10 +69,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (!raw) return;
 
     try {
-      const parsed = JSON.parse(raw) as Pick<StoreValue, 'pages' | 'dock' | 'wallpaper' | 'desktopIconPositions' | 'desktopWidgetPositions'>;
-      if (parsed.pages) setPages(parsed.pages);
-      if (parsed.dock) setDock(parsed.dock);
+      const parsed = JSON.parse(raw) as Pick<StoreValue, 'pages' | 'dock' | 'wallpaper' | 'trash' | 'desktopIconPositions' | 'desktopWidgetPositions'>;
+      if (hasUsablePages(parsed.pages)) setPages(parsed.pages);
+      if (hasUsableDock(parsed.dock)) setDock(parsed.dock);
       if (parsed.wallpaper) setWallpaper(parsed.wallpaper);
+      if (Array.isArray(parsed.trash)) setTrash(parsed.trash);
       if (parsed.desktopIconPositions) setDesktopIconPositions(parsed.desktopIconPositions);
       if (parsed.desktopWidgetPositions) setDesktopWidgetPositions(parsed.desktopWidgetPositions);
     } catch {
@@ -67,8 +82,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ pages, dock, wallpaper, desktopIconPositions, desktopWidgetPositions }));
-  }, [desktopIconPositions, desktopWidgetPositions, dock, pages, wallpaper]);
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ pages, dock, wallpaper, trash, desktopIconPositions, desktopWidgetPositions }));
+  }, [desktopIconPositions, desktopWidgetPositions, dock, pages, trash, wallpaper]);
 
   const setDesktopIconPosition = useCallback((itemId: string, position: DesktopIconPosition) => {
     setDesktopIconPositions((current) => ({
@@ -126,6 +141,22 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const sortDesktop = useCallback((mode: 'name' | 'kind' | 'date') => {
+    const weightByKind: Record<AppItem['type'], number> = { folder: 0, builtin: 1, external: 2 };
+    setPages((current) => current.map((page) => ({
+      ...page,
+      items: [...page.items].sort((left, right) => {
+        if (mode === 'kind') {
+          return weightByKind[left.type] - weightByKind[right.type] || left.title.localeCompare(right.title, 'zh-CN');
+        }
+        if (mode === 'date') {
+          return right.id.localeCompare(left.id);
+        }
+        return left.title.localeCompare(right.title, 'zh-CN');
+      }),
+    })));
+  }, []);
+
   const reorderPageItems = useCallback((pageId: string, items: HomePage['items']) => {
     setPages((current) => current.map((page) => (page.id === pageId ? { ...page, items } : page)));
   }, []);
@@ -151,10 +182,45 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setPages((current) => current.map((page) => (page.id === pageId ? { ...page, items: page.items.filter((item) => item.id !== itemId) } : page)));
   }, []);
 
+  const moveToTrash = useCallback((pageId: string, itemId: string) => {
+    setPages((current) => {
+      let moved: AppItem | null = null;
+      const next = current.map((page) => {
+        if (page.id !== pageId) return page;
+        const found = page.items.find((item) => item.id === itemId);
+        if (found) moved = found;
+        return { ...page, items: page.items.filter((item) => item.id !== itemId) };
+      });
+      if (moved) {
+        setTrash((prev) => (prev.some((t) => t.id === moved!.id) ? prev : [{ ...moved! }, ...prev]));
+      }
+      return next;
+    });
+    setDesktopIconPositions((current) => {
+      if (!(itemId in current)) return current;
+      const { [itemId]: _removed, ...rest } = current;
+      return rest;
+    });
+  }, []);
+
+  const restoreFromTrash = useCallback((itemId: string) => {
+    setTrash((current) => {
+      const found = current.find((t) => t.id === itemId);
+      if (!found) return current;
+      setPages((pages) => pages.map((page, index) => (index === 0 ? { ...page, items: [...page.items, found] } : page)));
+      return current.filter((t) => t.id !== itemId);
+    });
+  }, []);
+
+  const emptyTrash = useCallback(() => {
+    setTrash([]);
+  }, []);
+
   const resetToDefault = useCallback(() => {
     setPages(defaultPages);
     setDock(defaultDock);
     setWallpaper(defaultWallpaper);
+    setTrash([]);
     setDesktopIconPositions({});
     setDesktopWidgetPositions({});
     setEditMode(false);
@@ -172,6 +238,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       dock,
       wallpaper,
       editMode,
+      trash,
       desktopIconPositions,
       desktopWidgetPositions,
       setWallpaper,
@@ -181,13 +248,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setDesktopWidgetPosition,
       addToDock,
       createFolder,
+      sortDesktop,
       reorderPageItems,
       moveItemAcrossPages,
       removeItem,
+      moveToTrash,
+      restoreFromTrash,
+      emptyTrash,
       resetToDefault,
       verifyEditKey,
     }),
-    [addToDock, createFolder, desktopIconPositions, desktopWidgetPositions, dock, editMode, moveItemAcrossPages, pages, removeItem, reorderPageItems, resetToDefault, setDesktopIconPosition, setDesktopWidgetPosition, setManyDesktopIconPositions, verifyEditKey, wallpaper],
+    [addToDock, createFolder, desktopIconPositions, desktopWidgetPositions, dock, editMode, emptyTrash, moveItemAcrossPages, moveToTrash, pages, removeItem, reorderPageItems, resetToDefault, restoreFromTrash, setDesktopIconPosition, setDesktopWidgetPosition, setManyDesktopIconPositions, sortDesktop, trash, verifyEditKey, wallpaper],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
