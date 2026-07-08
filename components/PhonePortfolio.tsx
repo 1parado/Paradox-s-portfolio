@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { EditKeyModal } from '@/components/EditKeyModal';
 import { Folder } from '@/components/Folder';
 import { HomeScreen } from '@/components/HomeScreen';
@@ -10,6 +10,7 @@ import { ContextMenu } from '@/components/ContextMenu';
 import { PasswordModal } from '@/components/PasswordModal';
 import { SettingsPanel } from '@/components/SettingsPanel';
 import { WallpaperPicker } from '@/components/WallpaperPicker';
+import { findFolderById } from '@/lib/folders';
 import { StoreProvider, usePortfolioStore } from '@/lib/store';
 import type { AppItem, FolderItem } from '@/lib/types';
 
@@ -25,8 +26,11 @@ function PhonePortfolioInner() {
     moveItemAcrossPages,
     removeItem,
     createFolder,
+    renameFolder,
+    moveItemToPage,
     resetToDefault,
     verifyEditKey,
+    isEditKeyConfigured,
   } = usePortfolioStore();
 
   const [activeApp, setActiveApp] = useState<AppItem | null>(null);
@@ -35,18 +39,35 @@ function PhonePortfolioInner() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showWallpaper, setShowWallpaper] = useState(false);
-  const [openFolder, setOpenFolder] = useState<FolderItem | null>(null);
+  const [folderNavStack, setFolderNavStack] = useState<string[]>([]);
+  const [renameRequestId, setRenameRequestId] = useState<string | null>(null);
+
+  const folderPath = useMemo<FolderItem[]>(
+    () => folderNavStack
+      .map((id) => findFolderById(pages, id))
+      .filter((value): value is FolderItem => Boolean(value)),
+    [folderNavStack, pages],
+  );
+  const openFolder = folderPath[folderPath.length - 1] ?? null;
+
+  const closeFolder = useCallback(() => {
+    setFolderNavStack([]);
+    setRenameRequestId(null);
+  }, []);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        if (folderNavStack.length > 0) {
+          closeFolder();
+          return;
+        }
         setActiveApp(null);
         setPasswordApp(null);
         setContextApp(null);
         setShowEditModal(false);
         setShowSettings(false);
         setShowWallpaper(false);
-        setOpenFolder(null);
       }
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'e') {
         event.preventDefault();
@@ -55,7 +76,7 @@ function PhonePortfolioInner() {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [folderNavStack.length, closeFolder]);
 
   const pageMap = useMemo(() => new Map(pages.map((page) => [page.id, page])), [pages]);
 
@@ -65,7 +86,7 @@ function PhonePortfolioInner() {
       return;
     }
     if (app.type === 'folder') {
-      setOpenFolder(app as FolderItem);
+      setFolderNavStack([app.id]);
       return;
     }
     if (app.externalOnly && app.url) {
@@ -141,6 +162,14 @@ function PhonePortfolioInner() {
             if (contextApp.pageId) removeItem(contextApp.pageId, contextApp.app.id);
             setContextApp(null);
           }}
+          onRename={() => {
+            const target = contextApp.app;
+            setContextApp(null);
+            if (target.type === 'folder') {
+              setFolderNavStack([target.id]);
+              setRenameRequestId(target.id);
+            }
+          }}
         />
       ) : null}
 
@@ -173,6 +202,7 @@ function PhonePortfolioInner() {
 
       {showEditModal ? (
         <EditKeyModal
+          configured={isEditKeyConfigured()}
           onClose={() => setShowEditModal(false)}
           onSubmit={(value) => {
             const ok = verifyEditKey(value);
@@ -197,7 +227,33 @@ function PhonePortfolioInner() {
         />
       ) : null}
 
-      {openFolder ? <Folder folder={openFolder} onClose={() => setOpenFolder(null)} onOpen={openApp} /> : null}
+      {openFolder && folderPath.length > 0 ? (
+        <Folder
+          path={folderPath}
+          editing={editMode}
+          autoRenameId={renameRequestId}
+          onClose={closeFolder}
+          onOpen={openApp}
+          onOpenFolder={(folder) => setFolderNavStack((current) => {
+            const existing = current.indexOf(folder.id);
+            if (existing >= 0) return current.slice(0, existing + 1);
+            return [...current, folder.id];
+          })}
+          onNavigate={(folder) => {
+            if (!folder) {
+              closeFolder();
+              return;
+            }
+            setFolderNavStack((current) => {
+              const index = current.indexOf(folder.id);
+              if (index >= 0) return current.slice(0, index + 1);
+              return [folder.id];
+            });
+          }}
+          onRename={(folderId, title) => renameFolder(folderId, title)}
+          onRemoveFromFolder={(itemId) => moveItemToPage(itemId, pages[0]?.id ?? 'page-1')}
+        />
+      ) : null}
     </IPhoneFrame>
   );
 }
