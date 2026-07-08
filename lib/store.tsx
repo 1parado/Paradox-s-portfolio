@@ -30,7 +30,7 @@ type StoreValue = {
   verifyEditKey: (input: string) => boolean;
 };
 
-const STORAGE_KEY = 'paradox-macos-portfolio-v2';
+const STORAGE_KEY = 'paradox-macos-portfolio-v3';
 const StoreContext = createContext<StoreValue | null>(null);
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
