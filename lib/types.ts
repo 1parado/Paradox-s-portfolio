@@ -17,6 +17,7 @@ export type AppIconKey =
   | 'mentor'
   | 'motion'
   | 'note'
+  | 'photo'
   | 'portfolio'
   | 'prompt'
   | 'reading'
@@ -65,4 +66,14 @@ export type WallpaperPreset = {
   id: string;
   label: string;
   value: string;
+};
+
+export type PhotoEntry = {
+  id: string;
+  url: string;
+  path: string;
+  name: string;
+  createdAt: number;
+  width?: number;
+  height?: number;
 };

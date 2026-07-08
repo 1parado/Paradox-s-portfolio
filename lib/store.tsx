@@ -9,6 +9,7 @@ import {
   useState,
 } from 'react';
 import { defaultDock, defaultEditKey, defaultPages, defaultWallpaper } from '@/lib/defaultData';
+import { readSiteWallpaper } from '@/lib/githubAssets';
 import type { AppItem, DesktopIconPosition, HomePage } from '@/lib/types';
 
 type StoreValue = {
@@ -66,18 +67,28 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
+    let hasLocalWallpaper = false;
 
     try {
-      const parsed = JSON.parse(raw) as Pick<StoreValue, 'pages' | 'dock' | 'wallpaper' | 'trash' | 'desktopIconPositions' | 'desktopWidgetPositions'>;
+      const parsed = JSON.parse(raw ?? '{}') as Pick<StoreValue, 'pages' | 'dock' | 'wallpaper' | 'trash' | 'desktopIconPositions' | 'desktopWidgetPositions'>;
       if (hasUsablePages(parsed.pages)) setPages(parsed.pages);
       if (hasUsableDock(parsed.dock)) setDock(parsed.dock);
-      if (parsed.wallpaper) setWallpaper(parsed.wallpaper);
+      if (parsed.wallpaper) {
+        setWallpaper(parsed.wallpaper);
+        hasLocalWallpaper = true;
+      }
       if (Array.isArray(parsed.trash)) setTrash(parsed.trash);
       if (parsed.desktopIconPositions) setDesktopIconPositions(parsed.desktopIconPositions);
       if (parsed.desktopWidgetPositions) setDesktopWidgetPositions(parsed.desktopWidgetPositions);
     } catch {
       window.localStorage.removeItem(STORAGE_KEY);
+    }
+
+    // 本机未选过壁纸时，拉取站点级壁纸（部署后由编辑模式上传写入 GitHub），让首次访客也能看到。
+    if (!hasLocalWallpaper) {
+      readSiteWallpaper().then((value) => {
+        if (value) setWallpaper(value);
+      });
     }
   }, []);
 
