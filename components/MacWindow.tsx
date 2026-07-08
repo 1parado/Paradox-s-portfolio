@@ -179,7 +179,6 @@ export function MacWindow({ app, zIndex, minimized, focused, onFocus, onClose, o
 
   return (
     <motion.section
-      layoutId={`desktop-window-${app.id}`}
       className={[
         'absolute flex flex-col overflow-hidden border text-white shadow-[0_30px_110px_rgba(0,0,0,0.48)] backdrop-blur-3xl',
         fullscreen ? 'rounded-none' : 'rounded-[1.1rem]',
@@ -209,14 +208,12 @@ export function MacWindow({ app, zIndex, minimized, focused, onFocus, onClose, o
       }}
       dragSnapToOrigin
       onPointerDown={onFocus}
-      initial={{ opacity: 0, scale: 0.94, y: 18 }}
       animate={
         minimizing
           ? { opacity: 0, scale: 0.18, x: minimizeTarget.x, y: minimizeTarget.y }
           : { opacity: 1, scale: 1, x: 0, y: 0 }
       }
-      exit={{ opacity: 0, scale: 0.94, y: 18 }}
-      transition={{ type: 'spring', stiffness: 260, damping: 26 }}
+      transition={minimizing ? { type: 'spring', stiffness: 260, damping: 26 } : { duration: 0 }}
     >
       {!fullscreen && !minimizing
         ? edges.map(({ edge, className }) => (
