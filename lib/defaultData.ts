@@ -103,6 +103,7 @@ export const defaultDock: AppItem[] = [
   external({ id: 'dock-about', title: '关于', icon: '👤', iconKey: 'about', color: 'from-sky-400 to-indigo-600', description: '关于 Paradox / 李家乐。', url: 'https://1parado.github.io/' }),
   external({ id: 'dock-github', title: 'GitHub', icon: '🐙', iconKey: 'github', color: 'from-neutral-500 to-neutral-950', description: 'GitHub 快捷入口。', url: 'https://github.com/1parado', externalOnly: true }),
   builtin({ id: 'dock-settings', title: '设置', icon: '⚙️', iconKey: 'settings', color: 'from-neutral-400 to-neutral-700', description: '壁纸、编辑模式与重置。', builtinKey: 'settings' }),
+  builtin({ id: 'dock-photos', title: '照片', icon: '🖼️', iconKey: 'photo', color: 'from-pink-400 to-rose-500', description: '相册：进入整理模式后可上传图片，存入 GitHub。', builtinKey: 'photo' }),
 ];
 
 export const defaultWallpaper = wallpaperPresets[0].value;

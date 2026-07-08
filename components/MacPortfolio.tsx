@@ -756,6 +756,7 @@ function MacPortfolioInner() {
       {showWallpaper ? (
         <WallpaperPicker
           current={wallpaper}
+          editing={editMode}
           onClose={() => setShowWallpaper(false)}
           onSelect={(value) => {
             setWallpaper(value);

@@ -25,6 +25,7 @@ const iconPaths: Partial<Record<AppIconKey, string[]>> = {
   mentor: ['M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z', 'M4 20a8 8 0 0 1 16 0', 'M17 5h4v6h-4'],
   motion: ['M4 6h16v12H4z', 'M8 6v12M16 6v12', 'M10 10l4 2-4 2v-4Z'],
   note: ['M6 4h9l3 3v13H6z', 'M14 4v4h4', 'M9 12h6M9 16h5'],
+  photo: ['M4 5h16v14H4z', 'M8.5 15l2.5-3 2.5 3 3.5-4', 'M9 9.5a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6Z'],
   portfolio: ['M4 7h16v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Z', 'M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2', 'M4 12h16'],
   prompt: ['M5 7l5 5-5 5', 'M12 17h7'],
   reading: ['M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 0-3 0V4Z', 'M5 4v16'],
