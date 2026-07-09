@@ -89,7 +89,7 @@ export const defaultPages: HomePage[] = [
       external({ id: 'design-system', title: 'Design Sys', icon: '🎛️', iconKey: 'design', color: 'from-pink-400 to-rose-600', description: '设计系统与组件库占位。', url: 'https://github.com/1parado', externalOnly: true }),
       external({ id: 'playground', title: 'Playground', icon: '🧪', iconKey: 'lab', color: 'from-green-400 to-emerald-600', description: '一些随手做的小实验。', url: 'https://1parado.github.io/' }),
       external({ id: 'automation', title: '自动化', icon: '⚡', iconKey: 'automation', color: 'from-lime-300 to-teal-500', description: '脚本、工作流和效率工具占位。', url: 'https://github.com/1parado', externalOnly: true }),
-      external({ id: 'writing', title: '写作', icon: '📚', iconKey: 'writing', color: 'from-amber-300 to-red-500', description: '文章、方法论和项目复盘。', url: 'https://1parado.github.io/' }),
+      builtin({ id: 'writing', title: '书单', icon: '📚', iconKey: 'writing', color: 'from-amber-300 to-red-500', description: '读过的书：78 本，Notion 表格风格。', builtinKey: 'booklist' }),
       external({ id: 'archive', title: 'Archive', icon: '🗄️', iconKey: 'archive', color: 'from-neutral-400 to-stone-700', description: '旧项目和归档材料入口。', url: 'https://github.com/1parado', externalOnly: true }),
     ],
   },
@@ -99,7 +99,7 @@ export const defaultPages: HomePage[] = [
     items: [
       external({ id: 'github', title: 'GitHub', icon: '🐙', iconKey: 'github', color: 'from-neutral-500 to-neutral-950', description: '开源项目、代码与实验。', url: 'https://github.com/1parado', externalOnly: true }),
       builtin({ id: 'email', title: '邮箱', icon: '📮', iconKey: 'mail', color: 'from-amber-400 to-orange-600', description: '邮件联系与合作。', builtinKey: 'contact' }),
-      external({ id: 'about', title: '关于我', icon: '🙋', iconKey: 'about', color: 'from-sky-400 to-indigo-600', description: '关于 Paradox / 李家乐。', url: 'https://1parado.github.io/' }),
+      builtin({ id: 'about', title: '关于我', icon: '🙋', iconKey: 'about', color: 'from-sky-400 to-indigo-600', description: '姓名、昵称、邮箱与爱好。', builtinKey: 'about' }),
       builtin({ id: 'resume', title: '简历', icon: '📄', iconKey: 'resume', color: 'from-teal-400 to-cyan-600', description: '教育经历、实习、项目与技能。', builtinKey: 'resume' }),
       external({ id: 'reading', title: '阅读', icon: '🔖', iconKey: 'reading', color: 'from-purple-400 to-fuchsia-600', description: '阅读清单和收藏占位。', url: 'https://1parado.github.io/' }),
       external({ id: 'now', title: 'Now', icon: '📍', iconKey: 'target', color: 'from-red-400 to-orange-600', description: '正在做什么和近期动态占位。', url: 'https://1parado.github.io/' }),
