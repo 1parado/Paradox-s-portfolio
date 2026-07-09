@@ -6,6 +6,7 @@ import { Notepad } from '@/components/builtin/Notepad';
 import { OpenSourceContributions } from '@/components/builtin/OpenSourceContributions';
 import { PhotoApp } from '@/components/builtin/PhotoApp';
 import { Resume } from '@/components/builtin/Resume';
+import { SkillsList } from '@/components/builtin/SkillsList';
 import { VoiceCalendar } from '@/components/builtin/VoiceCalendar';
 
 export function getBuiltinApp(key?: string) {
@@ -17,6 +18,7 @@ export function getBuiltinApp(key?: string) {
   if (key === 'open-source') return OpenSourceContributions;
   if (key === 'photo') return PhotoApp;
   if (key === 'resume') return Resume;
+  if (key === 'skills') return SkillsList;
   if (key === 'voice-calendar') return VoiceCalendar;
   return null;
 }

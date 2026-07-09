@@ -23,6 +23,28 @@ const folder = (overrides: Omit<FolderItem, 'type'>): FolderItem => ({
   ...overrides,
 });
 
+export const skillsApp: AppItem = builtin({
+  id: 'folder-prompt',
+  title: 'Skills',
+  icon: '🧰',
+  iconKey: 'skills',
+  color: 'from-amber-300 to-cyan-500',
+  description: '我使用的 Codex skills 列表。',
+  builtinKey: 'skills',
+  techStack: ['Local Skills', 'Remote Skills', 'Codex'],
+});
+
+export const chatAgnesApp: AppItem = external({
+  id: 'chatagnes',
+  title: 'ChatAgnes',
+  icon: '🤖',
+  iconKey: 'agent',
+  color: 'from-violet-500 to-cyan-500',
+  description: 'AI 对话应用 ChatAgnes。',
+  url: 'https://1parado.github.io/ChatAgnes/',
+  techStack: ['AI App', 'Chat', 'GitHub Pages'],
+});
+
 export const defaultPages: HomePage[] = [
   {
     id: 'page-1',
@@ -64,6 +86,7 @@ export const defaultPages: HomePage[] = [
             passwordHint: '密码是北校区',
             techStack: ['React', 'TypeScript', 'Tailwind CSS', 'Netlify', '表单交互'],
           }),
+          chatAgnesApp,
         ],
       }),
       builtin({ id: 'open-source', title: '开源贡献', icon: '🐙', iconKey: 'github', color: 'from-neutral-500 to-neutral-950', description: '参与过的开源项目、技术栈和社区数据。', builtinKey: 'open-source', techStack: ['GitHub', 'Code Review', 'TypeScript', 'AI Agent'] }),
@@ -77,7 +100,7 @@ export const defaultPages: HomePage[] = [
         children: [
           external({ id: 'folder-motion', title: '动效', icon: '🎞️', iconKey: 'motion', color: 'from-indigo-400 to-blue-600', description: 'Motion 与转场设计记录。', url: 'https://1parado.github.io/' }),
           external({ id: 'folder-notes', title: '笔记', icon: '📝', iconKey: 'note', color: 'from-amber-300 to-orange-500', description: '公开写作与想法碎片。', url: 'https://1parado.github.io/' }),
-          external({ id: 'folder-prompt', title: 'Prompt', icon: '🧠', iconKey: 'prompt', color: 'from-yellow-400 to-orange-500', description: 'Prompt 工程案例集合。', url: 'https://github.com/1parado', externalOnly: true }),
+          skillsApp,
         ],
       }),
     ],
@@ -86,11 +109,7 @@ export const defaultPages: HomePage[] = [
     id: 'page-2',
     title: '实验',
     items: [
-      external({ id: 'design-system', title: 'Design Sys', icon: '🎛️', iconKey: 'design', color: 'from-pink-400 to-rose-600', description: '设计系统与组件库占位。', url: 'https://github.com/1parado', externalOnly: true }),
-      external({ id: 'playground', title: 'Playground', icon: '🧪', iconKey: 'lab', color: 'from-green-400 to-emerald-600', description: '一些随手做的小实验。', url: 'https://1parado.github.io/' }),
-      external({ id: 'automation', title: '自动化', icon: '⚡', iconKey: 'automation', color: 'from-lime-300 to-teal-500', description: '脚本、工作流和效率工具占位。', url: 'https://github.com/1parado', externalOnly: true }),
       builtin({ id: 'writing', title: '书单', icon: '📚', iconKey: 'writing', color: 'from-amber-300 to-red-500', description: '读过的书：78 本，Notion 表格风格。', builtinKey: 'booklist' }),
-      external({ id: 'archive', title: 'Archive', icon: '🗄️', iconKey: 'archive', color: 'from-neutral-400 to-stone-700', description: '旧项目和归档材料入口。', url: 'https://github.com/1parado', externalOnly: true }),
     ],
   },
   {
@@ -101,8 +120,6 @@ export const defaultPages: HomePage[] = [
       builtin({ id: 'email', title: '邮箱', icon: '📮', iconKey: 'mail', color: 'from-amber-400 to-orange-600', description: '邮件联系与合作。', builtinKey: 'contact' }),
       builtin({ id: 'about', title: '关于我', icon: '🙋', iconKey: 'about', color: 'from-sky-400 to-indigo-600', description: '姓名、昵称、邮箱与爱好。', builtinKey: 'about' }),
       builtin({ id: 'resume', title: '简历', icon: '📄', iconKey: 'resume', color: 'from-teal-400 to-cyan-600', description: '教育经历、实习、项目与技能。', builtinKey: 'resume' }),
-      external({ id: 'reading', title: '阅读', icon: '🔖', iconKey: 'reading', color: 'from-purple-400 to-fuchsia-600', description: '阅读清单和收藏占位。', url: 'https://1parado.github.io/' }),
-      external({ id: 'now', title: 'Now', icon: '📍', iconKey: 'target', color: 'from-red-400 to-orange-600', description: '正在做什么和近期动态占位。', url: 'https://1parado.github.io/' }),
     ],
   },
 ];

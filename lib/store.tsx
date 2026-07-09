@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { defaultDock, defaultPages, defaultWallpaper } from '@/lib/defaultData';
+import { chatAgnesApp, defaultDock, defaultPages, defaultWallpaper, skillsApp } from '@/lib/defaultData';
 import { findFolderById, isDescendantFolder, isFolder } from '@/lib/folders';
 import { readSiteWallpaper } from '@/lib/githubAssets';
 import type { AppItem, DesktopIconPosition, HomePage, HomeItem } from '@/lib/types';
@@ -45,6 +45,7 @@ type StoreValue = {
 
 const STORAGE_KEY = 'paradox-macos-portfolio-v7';
 const StoreContext = createContext<StoreValue | null>(null);
+const retiredAppIds = new Set(['archive', 'automation', 'design-system', 'now', 'playground', 'reading']);
 
 function isSameDockApp(left: AppItem, right: AppItem) {
   if (left.id === right.id) return true;
@@ -59,6 +60,50 @@ function hasUsablePages(value: unknown): value is HomePage[] {
 
 function hasUsableDock(value: unknown): value is AppItem[] {
   return Array.isArray(value) && value.length > 0;
+}
+
+function migrateSkillsAppInItems(items: HomeItem[]): HomeItem[] {
+  return items.flatMap((item) => {
+    if (retiredAppIds.has(item.id)) return [];
+    if (item.id === skillsApp.id) {
+      return [{ ...skillsApp }];
+    }
+    if (isFolder(item)) {
+      return [{ ...item, children: migrateSkillsAppInItems(item.children) }];
+    }
+    return [item];
+  });
+}
+
+function hasItemWithId(items: HomeItem[], itemId: string): boolean {
+  return items.some((item) => item.id === itemId || (isFolder(item) && hasItemWithId(item.children, itemId)));
+}
+
+function appendItemToFolder(items: HomeItem[], folderId: string, app: AppItem): HomeItem[] {
+  return items.map((item) => {
+    if (!isFolder(item)) return item;
+    if (item.id === folderId) {
+      return { ...item, children: [...item.children, app] };
+    }
+    return { ...item, children: appendItemToFolder(item.children, folderId, app) };
+  });
+}
+
+function ensureChatAgnesAppInPages(value: HomePage[]): HomePage[] {
+  if (value.some((page) => hasItemWithId(page.items, chatAgnesApp.id))) return value;
+  return value.map((page) => (
+    page.id === 'page-1'
+      ? { ...page, items: appendItemToFolder(page.items, 'portfolio-lab', chatAgnesApp) }
+      : page
+  ));
+}
+
+function migrateSkillsAppInPages(value: HomePage[]): HomePage[] {
+  const migrated = value.map((page) => ({
+    ...page,
+    items: migrateSkillsAppInItems(page.items),
+  }));
+  return ensureChatAgnesAppInPages(migrated);
 }
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
@@ -76,7 +121,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const parsed = JSON.parse(raw ?? '{}') as Pick<StoreValue, 'pages' | 'dock' | 'wallpaper' | 'trash' | 'desktopIconPositions' | 'desktopWidgetPositions'>;
-      if (hasUsablePages(parsed.pages)) setPages(parsed.pages);
+      if (hasUsablePages(parsed.pages)) setPages(migrateSkillsAppInPages(parsed.pages));
       if (hasUsableDock(parsed.dock)) {
         // 迁移：从 dock 中移除已下线的「关于」项，保留其余用户自定义。
         const dockWithoutAbout = parsed.dock.filter((item) => item.id !== 'dock-about');
@@ -86,7 +131,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         setWallpaper(parsed.wallpaper);
         hasLocalWallpaper = true;
       }
-      if (Array.isArray(parsed.trash)) setTrash(parsed.trash);
+      if (Array.isArray(parsed.trash)) setTrash(migrateSkillsAppInItems(parsed.trash));
       if (parsed.desktopIconPositions) setDesktopIconPositions(parsed.desktopIconPositions);
       if (parsed.desktopWidgetPositions) setDesktopWidgetPositions(parsed.desktopWidgetPositions);
     } catch {
