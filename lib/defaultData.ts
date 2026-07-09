@@ -131,4 +131,7 @@ export const defaultDock: AppItem[] = [
   builtin({ id: 'dock-notepad', title: '记事本', icon: '📝', iconKey: 'note', color: 'from-amber-300 to-orange-500', description: '记事本：进入整理模式后可编辑，内容存入 GitHub。', builtinKey: 'notepad' }),
 ];
 
-export const defaultWallpaper = wallpaperPresets[0].value;
+// 站点级壁纸：与 uploads/wallpaper.json 中由编辑模式写入的站点壁纸保持一致，
+// 作为首屏默认值与 GitHub fetch 失败时的兜底（避免先闪渐变再换图）。
+export const defaultWallpaper =
+  'url(https://raw.githubusercontent.com/1parado/Paradox-s-portfolio/main/uploads/wallpapers/wallpaper-mrcxbwoe-i2vdkw.jpeg) center / cover no-repeat';
