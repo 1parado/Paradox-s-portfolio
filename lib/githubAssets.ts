@@ -1,6 +1,6 @@
 'use client';
 
-import type { PhotoEntry } from '@/lib/types';
+import type { PhotoEntry, WallpaperEntry } from '@/lib/types';
 
 type GitHubConfig = {
   owner: string;
@@ -13,6 +13,7 @@ const PHOTOS_DIR = 'uploads/photos';
 const PHOTOS_MANIFEST_PATH = 'uploads/photos.json';
 const WALLPAPERS_DIR = 'uploads/wallpapers';
 const WALLPAPER_CONFIG_PATH = 'uploads/wallpaper.json';
+const WALLPAPERS_MANIFEST_PATH = 'uploads/wallpapers.json';
 const NOTEPAD_PATH = 'uploads/notepad.json';
 
 export type NotepadDoc = {
@@ -242,10 +243,72 @@ export async function removePhoto(id: string): Promise<void> {
   await writePhotoManifest(next);
 }
 
-/** 上传壁纸图片，返回可直接用于 CSS background 的 url(...) 字符串与 raw 直链。 */
-export async function uploadWallpaper(file: File): Promise<{ value: string; url: string }> {
-  const { url } = await uploadImageFile(file, WALLPAPERS_DIR, 'wallpaper');
-  return { value: `url(${url}) center / cover no-repeat`, url };
+/** 上传壁纸图片，返回可直接用于 CSS background 的 url(...) 字符串、raw 直链与仓库内路径。 */
+export async function uploadWallpaper(file: File): Promise<{ value: string; url: string; path: string }> {
+  const { url, path } = await uploadImageFile(file, WALLPAPERS_DIR, 'wallpaper');
+  return { value: `url(${url}) center / cover no-repeat`, url, path };
+}
+
+/** 读取自定义壁纸清单；不存在返回空数组。 */
+export async function readWallpaperManifest(): Promise<WallpaperEntry[]> {
+  if (!isGithubUploadEnabled()) return [];
+  try {
+    const result = await apiGetContents(WALLPAPERS_MANIFEST_PATH);
+    if (!result.exists || !result.contentText) return [];
+    const parsed = JSON.parse(result.contentText);
+    if (!Array.isArray(parsed)) return [];
+    return parsed as WallpaperEntry[];
+  } catch (error) {
+    console.warn('读取壁纸清单失败', error);
+    return [];
+  }
+}
+
+async function writeWallpaperManifest(entries: WallpaperEntry[]): Promise<void> {
+  const result = await apiGetContents(WALLPAPERS_MANIFEST_PATH);
+  const content = encodeBase64(JSON.stringify(entries, null, 2));
+  await apiPutContents(
+    WALLPAPERS_MANIFEST_PATH,
+    content,
+    `chore: update wallpaper manifest (${entries.length})`,
+    result.exists ? result.sha : undefined,
+  );
+}
+
+/** 上传一张壁纸并写入清单，返回新条目。 */
+export async function addWallpaper(file: File): Promise<WallpaperEntry> {
+  const { value, url, path } = await uploadWallpaper(file);
+  const entries = await readWallpaperManifest();
+  const entry: WallpaperEntry = {
+    id: randomId() + Date.now().toString(36),
+    value,
+    url,
+    path,
+    name: file.name,
+    createdAt: Date.now(),
+  };
+  const next = [entry, ...entries];
+  await writeWallpaperManifest(next);
+  return entry;
+}
+
+/** 删除一张壁纸：删图文件 + 从清单移除。 */
+export async function removeWallpaper(id: string): Promise<void> {
+  const entries = await readWallpaperManifest();
+  const target = entries.find((entry) => entry.id === id);
+  if (!target) return;
+  if (target.path) {
+    try {
+      const info = await apiGetContents(target.path);
+      if (info.exists && info.sha) {
+        await apiDeleteContents(target.path, info.sha, `delete: ${target.name}`);
+      }
+    } catch (error) {
+      console.warn('删除壁纸文件失败', error);
+    }
+  }
+  const next = entries.filter((entry) => entry.id !== id);
+  await writeWallpaperManifest(next);
 }
 
 /** 把站点级壁纸写入 uploads/wallpaper.json，供首次访客拉取。 */

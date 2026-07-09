@@ -77,3 +77,15 @@ export type PhotoEntry = {
   width?: number;
   height?: number;
 };
+
+export type WallpaperEntry = {
+  id: string;
+  /** 可直接用于 CSS background 的值，如 `url(...) center / cover no-repeat`。 */
+  value: string;
+  /** raw 直链，用于预览缩略图。 */
+  url: string;
+  /** 仓库内路径，删除时定位文件。 */
+  path: string;
+  name: string;
+  createdAt: number;
+};
