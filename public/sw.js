@@ -3,12 +3,16 @@
 // 而不必等浏览器 HTML 缓存过期（Pages 默认缓存 HTML 约 10 分钟）。
 //
 // 策略：
-//   - 导航请求（HTML 文档）→ 网络优先：总是拉最新 HTML，失败再回退缓存。
-//     这样新部署的 HTML（引用新的 _next 哈希 chunk）会立即生效。
+//   - 导航请求（HTML 文档）→ 网络优先，且用 cache: 'no-cache' 强制与源站再校验，
+//     绕过浏览器本地的 HTTP 缓存——否则同一浏览器会一直拿到旧 HTML（换个没缓存的
+//     浏览器才是新页面）。失败再回退缓存（离线兜底）。
 //   - 同源静态资源（_next/ 下的 JS/CSS/字体等）→ 缓存优先：命中直接用，
 //     未命中再联网并缓存。这些资源文件名带内容哈希，缓存绝对安全。
+//
+// 部署新版本时：bump CACHE 版本号会让新 SW 在 activate 阶段清掉旧缓存，
+// 配合 skipWaiting + clients.claim + 页面 controllerchange 重载，访客可即时切换到新版。
 
-const CACHE = 'paradox-cache-v1';
+const CACHE = 'paradox-cache-v2';
 
 self.addEventListener('install', () => {
   self.skipWaiting();
@@ -25,7 +29,8 @@ self.addEventListener('activate', (event) => {
 async function networkFirst(request) {
   const cache = await caches.open(CACHE);
   try {
-    const fresh = await fetch(request);
+    // no-cache：每次都与源站再校验（304 或新 200），绝不直接用浏览器本地 HTTP 缓存里的旧 HTML。
+    const fresh = await fetch(request, { cache: 'no-cache' });
     if (fresh && fresh.ok) cache.put(request, fresh.clone());
     return fresh;
   } catch (error) {

@@ -77,7 +77,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     try {
       const parsed = JSON.parse(raw ?? '{}') as Pick<StoreValue, 'pages' | 'dock' | 'wallpaper' | 'trash' | 'desktopIconPositions' | 'desktopWidgetPositions'>;
       if (hasUsablePages(parsed.pages)) setPages(parsed.pages);
-      if (hasUsableDock(parsed.dock)) setDock(parsed.dock);
+      if (hasUsableDock(parsed.dock)) {
+        // 迁移：从 dock 中移除已下线的「关于」项，保留其余用户自定义。
+        const dockWithoutAbout = parsed.dock.filter((item) => item.id !== 'dock-about');
+        setDock(dockWithoutAbout.length > 0 ? dockWithoutAbout : defaultDock);
+      }
       if (parsed.wallpaper) {
         setWallpaper(parsed.wallpaper);
         hasLocalWallpaper = true;
