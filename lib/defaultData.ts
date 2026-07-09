@@ -89,7 +89,7 @@ export const defaultPages: HomePage[] = [
       external({ id: 'design-system', title: 'Design Sys', icon: '🎛️', iconKey: 'design', color: 'from-pink-400 to-rose-600', description: '设计系统与组件库占位。', url: 'https://github.com/1parado', externalOnly: true }),
       external({ id: 'playground', title: 'Playground', icon: '🧪', iconKey: 'lab', color: 'from-green-400 to-emerald-600', description: '一些随手做的小实验。', url: 'https://1parado.github.io/' }),
       external({ id: 'automation', title: '自动化', icon: '⚡', iconKey: 'automation', color: 'from-lime-300 to-teal-500', description: '脚本、工作流和效率工具占位。', url: 'https://github.com/1parado', externalOnly: true }),
-      builtin({ id: 'writing', title: '书单', icon: '📚', iconKey: 'writing', color: 'from-amber-300 to-red-500', description: '读过的书：78 本，按 Notion 表格分组。', builtinKey: 'booklist' }),
+      builtin({ id: 'writing', title: '书单', icon: '📚', iconKey: 'writing', color: 'from-amber-300 to-red-500', description: '读过的书：78 本，Notion 表格风格。', builtinKey: 'booklist' }),
       external({ id: 'archive', title: 'Archive', icon: '🗄️', iconKey: 'archive', color: 'from-neutral-400 to-stone-700', description: '旧项目和归档材料入口。', url: 'https://github.com/1parado', externalOnly: true }),
     ],
   },
