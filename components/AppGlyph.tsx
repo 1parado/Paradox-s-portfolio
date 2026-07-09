@@ -31,6 +31,7 @@ const iconPaths: Partial<Record<AppIconKey, string[]>> = {
   reading: ['M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 0-3 0V4Z', 'M5 4v16'],
   resume: ['M7 3h7l4 4v14H7z', 'M14 3v5h5', 'M10 12h6M10 16h5'],
   settings: ['M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z', 'M3 12h3M18 12h3M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1'],
+  skills: ['M5 5h14v4H5z', 'M5 15h14v4H5z', 'M8 9v6M16 9v6', 'M9 3h6M9 21h6'],
   target: ['M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z', 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z', 'M12 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z'],
   writing: ['M4 20h16', 'M7 17l9.5-9.5a2.1 2.1 0 0 0-3-3L4 14v3h3Z'],
 };

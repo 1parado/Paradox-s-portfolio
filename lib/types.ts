@@ -23,6 +23,7 @@ export type AppIconKey =
   | 'reading'
   | 'resume'
   | 'settings'
+  | 'skills'
   | 'target'
   | 'writing';
 
