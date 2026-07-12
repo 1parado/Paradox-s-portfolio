@@ -14,6 +14,7 @@ export type AppIconKey =
   | 'github'
   | 'lab'
   | 'mail'
+  | 'music'
   | 'mentor'
   | 'motion'
   | 'note'

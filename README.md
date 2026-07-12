@@ -14,6 +14,8 @@
 - 🧮 **内置 App** - 本地 React 组件实现（如计算器）
 - 💾 **本地持久化** - 布局和壁纸自动保存到 localStorage
 - 🌐 **静态部署** - 完全静态导出，GitHub Pages 友好
+- 🤖 **Paradox Agent** - 由 Agnes 大模型驱动，可搜索和打开 App、控制窗口与返回桌面
+- 🎵 **音乐播放器** - Apple Music 风格内置播放器，支持 iTunes 在线搜索、预览音频、曲目切换和专辑封面
 
 ## 🚀 快速开始
 
@@ -153,6 +155,12 @@ paradox_web/
 1. 在 `components/builtin/` 创建新组件
 2. 在 `registry.ts` 注册组件
 3. 在 `defaultData.ts` 添加 App 配置（`type: 'builtin'`, `builtinKey: 'your-component'`）
+
+### Paradox Agent
+
+桌面左下角和 iPhone Dock 上方提供常驻 Agent。按住助手图标可以在屏幕内拖动，面板会根据当前位置自动选择展开方向。Agent 使用 Agnes 的 OpenAI-compatible Chat Completions 接口，通过严格的工具白名单操作桌面。
+
+当前允许的操作包括打开 App、Spotlight 搜索、打开 Finder、显示所有窗口、最小化或关闭当前窗口、返回桌面。聊天支持随时停止正在执行的 Agnes 请求并清空记录。删除、编辑、上传、修改设置和绕过密码等操作不会暴露给模型。
 
 ## 🛠 技术栈
 

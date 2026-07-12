@@ -55,6 +55,17 @@ export const grokSwitchApp: AppItem = external({
   techStack: ['Grok', '配置切换', 'GitHub Pages'],
 });
 
+export const musicApp: AppItem = builtin({
+  id: 'music',
+  title: '音乐',
+  icon: '🎵',
+  iconKey: 'music',
+  color: 'from-fuchsia-500 to-indigo-600',
+  description: 'Apple Music 风格播放器，支持在线搜索、预览播放、曲目切换和专辑封面。',
+  builtinKey: 'music',
+  techStack: ['iTunes Search API', 'Audio API', 'Framer Motion'],
+});
+
 export const defaultPages: HomePage[] = [
   {
     id: 'page-1',
@@ -62,6 +73,7 @@ export const defaultPages: HomePage[] = [
     items: [
       external({ id: 'blog', title: '博客', icon: '✍️', iconKey: 'blog', color: 'from-orange-400 to-rose-500', description: '写作、思考与实验记录。', url: 'https://1parado.github.io/' }),
       builtin({ id: 'calculator', title: '计算器', icon: '🧮', iconKey: 'calculator', color: 'from-zinc-500 to-zinc-800', description: '本地 React 组件实现的 iOS 风格计算器。', builtinKey: 'calculator' }),
+      musicApp,
       folder({
         id: 'portfolio-lab',
         title: '作品集',

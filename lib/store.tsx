@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { chatAgnesApp, defaultDock, defaultPages, defaultWallpaper, grokSwitchApp, skillsApp } from '@/lib/defaultData';
+import { chatAgnesApp, defaultDock, defaultPages, defaultWallpaper, grokSwitchApp, musicApp, skillsApp } from '@/lib/defaultData';
 import { findFolderById, isDescendantFolder, isFolder } from '@/lib/folders';
 import { readSiteWallpaper } from '@/lib/githubAssets';
 import type { AppItem, DesktopIconPosition, HomePage, HomeItem } from '@/lib/types';
@@ -98,12 +98,20 @@ function ensurePortfolioAppInPages(value: HomePage[], app: AppItem): HomePage[] 
   ));
 }
 
+function ensureTopLevelAppInPage(value: HomePage[], pageId: string, app: AppItem): HomePage[] {
+  if (value.some((page) => hasItemWithId(page.items, app.id))) return value;
+  return value.map((page) => (
+    page.id === pageId ? { ...page, items: [...page.items, app] } : page
+  ));
+}
+
 function migrateSkillsAppInPages(value: HomePage[]): HomePage[] {
   const migrated = value.map((page) => ({
     ...page,
     items: migrateSkillsAppInItems(page.items),
   }));
-  return [chatAgnesApp, grokSwitchApp].reduce(ensurePortfolioAppInPages, migrated);
+  const withPortfolioApps = [chatAgnesApp, grokSwitchApp].reduce(ensurePortfolioAppInPages, migrated);
+  return ensureTopLevelAppInPage(withPortfolioApps, 'page-1', musicApp);
 }
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {

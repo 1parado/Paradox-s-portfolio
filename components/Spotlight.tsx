@@ -9,6 +9,7 @@ import type { AppItem, FolderItem, HomePage } from '@/lib/types';
 type Props = {
   pages: HomePage[];
   dock: AppItem[];
+  initialQuery?: string;
   onOpen: (app: AppItem) => void;
   onOpenFolder: (folder: FolderItem) => void;
   onClose: () => void;
@@ -25,8 +26,8 @@ function describeLocation(entry: { pageTitle?: string; folderTitle?: string }): 
   return entry.pageTitle ?? '';
 }
 
-export function Spotlight({ pages, dock, onOpen, onOpenFolder, onClose }: Props) {
-  const [query, setQuery] = useState('');
+export function Spotlight({ pages, dock, initialQuery = '', onOpen, onOpenFolder, onClose }: Props) {
+  const [query, setQuery] = useState(initialQuery);
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
@@ -60,6 +61,10 @@ export function Spotlight({ pages, dock, onOpen, onOpenFolder, onClose }: Props)
   useEffect(() => {
     setActive(0);
   }, [query]);
+
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
 
   useEffect(() => {
     if (inputRef.current) inputRef.current.focus();

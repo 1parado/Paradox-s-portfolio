@@ -22,6 +22,7 @@ const iconPaths: Partial<Record<AppIconKey, string[]>> = {
   folder: ['M3 6h7l2 2h9v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6Z'],
   lab: ['M9 3h6', 'M10 3v5l-5 9a3 3 0 0 0 2.6 4.5h8.8A3 3 0 0 0 19 17l-5-9V3', 'M8 15h8'],
   mail: ['M4 6h16v12H4z', 'm4 7 8 6 8-6'],
+  music: ['M9 18V5l10-2v13', 'M9 18a3 3 0 1 1-3-3 3 3 0 0 1 3 3ZM19 16a3 3 0 1 1-3-3 3 3 0 0 1 3 3Z'],
   mentor: ['M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z', 'M4 20a8 8 0 0 1 16 0', 'M17 5h4v6h-4'],
   motion: ['M4 6h16v12H4z', 'M8 6v12M16 6v12', 'M10 10l4 2-4 2v-4Z'],
   note: ['M6 4h9l3 3v13H6z', 'M14 4v4h4', 'M9 12h6M9 16h5'],

@@ -8,6 +8,7 @@ import { PhotoApp } from '@/components/builtin/PhotoApp';
 import { Resume } from '@/components/builtin/Resume';
 import { SkillsList } from '@/components/builtin/SkillsList';
 import { VoiceCalendar } from '@/components/builtin/VoiceCalendar';
+import { MusicApp } from '@/components/builtin/MusicApp';
 
 export function getBuiltinApp(key?: string) {
   if (key === 'about') return AboutCard;
@@ -20,5 +21,6 @@ export function getBuiltinApp(key?: string) {
   if (key === 'resume') return Resume;
   if (key === 'skills') return SkillsList;
   if (key === 'voice-calendar') return VoiceCalendar;
+  if (key === 'music') return MusicApp;
   return null;
 }
