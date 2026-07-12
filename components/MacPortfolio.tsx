@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ContextMenu } from '@/components/ContextMenu';
+import { DesktopAgent } from '@/components/DesktopAgent';
 import { EditKeyModal } from '@/components/EditKeyModal';
 import { Folder } from '@/components/Folder';
 import { HomeScreen } from '@/components/HomeScreen';
@@ -21,8 +22,9 @@ import { PasswordModal } from '@/components/PasswordModal';
 import { SettingsPanel } from '@/components/SettingsPanel';
 import { Spotlight } from '@/components/Spotlight';
 import { WallpaperPicker } from '@/components/WallpaperPicker';
-import { findFolderById, isFolder } from '@/lib/folders';
+import { findFolderById, flattenAllItems, isFolder } from '@/lib/folders';
 import { StoreProvider, usePortfolioStore } from '@/lib/store';
+import type { AgentAction } from '@/lib/agnesAgent';
 import type { AppItem, DesktopIconPosition, FolderItem } from '@/lib/types';
 
 type WindowState = {
@@ -143,6 +145,7 @@ function MacPortfolioInner() {
   const [showMissionControl, setShowMissionControl] = useState(false);
   const [showTrash, setShowTrash] = useState(false);
   const [showSpotlight, setShowSpotlight] = useState(false);
+  const [spotlightQuery, setSpotlightQuery] = useState('');
   const [folderNavStack, setFolderNavStack] = useState<string[]>([]);
   const [renameRequestId, setRenameRequestId] = useState<string | null>(null);
   const [desktopMenu, setDesktopMenu] = useState<{ x: number; y: number } | null>(null);
@@ -162,6 +165,10 @@ function MacPortfolioInner() {
   const desktopEntries = useMemo(
     () => pages.flatMap((page) => page.items.map((item) => ({ item: item as AppItem, pageId: page.id, pageTitle: page.title }))),
     [pages],
+  );
+  const agentApps = useMemo(
+    () => flattenAllItems(pages, dock).map((entry) => entry.item),
+    [pages, dock],
   );
 
   const activeWindow = useMemo(() => windows.filter((window) => !window.minimized).sort((a, b) => b.zIndex - a.zIndex)[0], [windows]);
@@ -333,6 +340,57 @@ function MacPortfolioInner() {
       return;
     }
     openUnlockedApp(app);
+  };
+
+  const runAgentAction = (action: AgentAction): string => {
+    if (action.name === 'open_app') {
+      const app = agentApps.find((item) => item.id === action.arguments.app_id);
+      if (!app) return '没有找到这个应用。';
+      openApp(app);
+      return `已打开“${app.title}”。`;
+    }
+    if (action.name === 'search_apps') {
+      const query = action.arguments.query?.trim() ?? '';
+      setSpotlightQuery(query);
+      setShowSpotlight(true);
+      return query ? `正在搜索“${query}”。` : '已打开 Spotlight。';
+    }
+    if (action.name === 'open_spotlight') {
+      setSpotlightQuery('');
+      setShowSpotlight(true);
+      return '已打开 Spotlight。';
+    }
+    if (action.name === 'open_finder') {
+      setShowFinder(true);
+      return '已打开 Finder。';
+    }
+    if (action.name === 'show_windows') {
+      setShowMissionControl(true);
+      return windows.length > 0 ? `正在显示 ${windows.length} 个窗口。` : '当前没有打开的窗口。';
+    }
+    if (action.name === 'minimize_active_window') {
+      if (!activeWindow) return '当前没有可最小化的窗口。';
+      setWindows((current) => current.map((item) => (
+        item.id === activeWindow.id ? { ...item, minimized: true } : item
+      )));
+      return `已最小化“${activeWindow.app.title}”。`;
+    }
+    if (action.name === 'close_active_window') {
+      if (!activeWindow) return '当前没有可关闭的窗口。';
+      setWindows((current) => current.filter((item) => item.id !== activeWindow.id));
+      return `已关闭“${activeWindow.app.title}”。`;
+    }
+    setShowSpotlight(false);
+    setShowFinder(false);
+    setShowMissionControl(false);
+    setShowTrash(false);
+    setShowSettings(false);
+    setShowControlCenter(false);
+    setShowWallpaper(false);
+    setFolderNavStack([]);
+    setActiveMobileApp(null);
+    setWindows((current) => current.map((item) => ({ ...item, minimized: true })));
+    return '已返回桌面。';
   };
 
   useEffect(() => {
@@ -895,12 +953,19 @@ function MacPortfolioInner() {
           <Spotlight
             pages={pages}
             dock={dock}
+            initialQuery={spotlightQuery}
             onOpen={openApp}
             onOpenFolder={openFolderById}
             onClose={() => setShowSpotlight(false)}
           />
         ) : null}
       </AnimatePresence>
+
+      <DesktopAgent
+        apps={agentApps}
+        activeWindowTitle={activeWindow?.app.title}
+        onAction={runAgentAction}
+      />
     </main>
   );
 }

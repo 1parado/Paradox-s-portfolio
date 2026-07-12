@@ -84,10 +84,11 @@ export function MacMissionControl({ windows, onSelect, onClose, onCloseAll, onCl
         <AnimatePresence>
           {windows.length > 0
             ? windows.map((window) => (
-                <motion.button
+                <motion.div
                   key={window.id}
                   layout
-                  type="button"
+                  role="button"
+                  tabIndex={0}
                   className="group relative rounded-[1.3rem] border border-white/14 bg-white/10 p-4 text-left shadow-2xl shadow-black/25 transition hover:-translate-y-1 hover:bg-white/16"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -95,6 +96,13 @@ export function MacMissionControl({ windows, onSelect, onClose, onCloseAll, onCl
                   onClick={(event) => {
                     event.stopPropagation();
                     onSelect(window.id);
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      onSelect(window.id);
+                    }
                   }}
                 >
                   <button
@@ -117,7 +125,7 @@ export function MacMissionControl({ windows, onSelect, onClose, onCloseAll, onCl
                     <span className="truncate text-sm font-semibold">{window.app.title}</span>
                     {window.minimized ? <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-white/55">已最小化</span> : null}
                   </div>
-                </motion.button>
+                </motion.div>
               ))
             : (
               <div className="col-span-full rounded-[1.3rem] border border-dashed border-white/20 bg-white/8 p-8 text-center text-white/60">
