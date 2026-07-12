@@ -558,7 +558,7 @@ function MacPortfolioInner() {
           }}
           whileDrag={{ scale: 1.015, zIndex: 48 }}
         >
-          <MacWidgetStack appCount={desktopEntries.length} dockCount={dock.length} />
+          <MacWidgetStack />
         </motion.div>
 
         <div
