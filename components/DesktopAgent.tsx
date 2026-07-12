@@ -13,6 +13,37 @@ type Props = {
 
 type UiMessage = AgentChatMessage & { id: string };
 
+type SpeechRecognitionResultLike = {
+  isFinal: boolean;
+  0: { transcript: string };
+};
+
+type SpeechRecognitionEventLike = {
+  resultIndex: number;
+  results: ArrayLike<SpeechRecognitionResultLike>;
+};
+
+type SpeechRecognitionErrorEventLike = {
+  error: string;
+};
+
+type SpeechRecognitionLike = {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onstart: (() => void) | null;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+};
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+
+type VoiceState = 'idle' | 'listening' | 'transcribing';
+
 const suggestions = ['打开简历', '搜索 AI 项目', '显示所有窗口'];
 
 function createMessage(role: UiMessage['role'], content: string): UiMessage {
@@ -24,6 +55,8 @@ export function DesktopAgent({ apps, activeWindowTitle, onAction }: Props) {
   const [showGreeting, setShowGreeting] = useState(true);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [voiceState, setVoiceState] = useState<VoiceState>('idle');
+  const [voiceMessage, setVoiceMessage] = useState('');
   const [viewport, setViewport] = useState({ width: 1440, height: 900 });
   const [panelLeft, setPanelLeft] = useState(0);
   const [panelBelow, setPanelBelow] = useState(false);
@@ -32,6 +65,10 @@ export function DesktopAgent({ apps, activeWindowTitle, onAction }: Props) {
     createMessage('assistant', '想打开什么？'),
   ]);
   const abortRef = useRef<AbortController | null>(null);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const voiceTranscriptRef = useRef('');
+  const voiceErrorRef = useRef(false);
+  const voiceSubmitTimerRef = useRef<number | null>(null);
   const agentRef = useRef<HTMLDivElement | null>(null);
   const draggedRef = useRef(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -42,7 +79,12 @@ export function DesktopAgent({ apps, activeWindowTitle, onAction }: Props) {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, loading]);
 
-  useEffect(() => () => abortRef.current?.abort(), []);
+  useEffect(() => () => {
+    abortRef.current?.abort();
+    voiceErrorRef.current = true;
+    recognitionRef.current?.abort();
+    if (voiceSubmitTimerRef.current !== null) window.clearTimeout(voiceSubmitTimerRef.current);
+  }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setShowGreeting(false), 6000);
@@ -59,6 +101,7 @@ export function DesktopAgent({ apps, activeWindowTitle, onAction }: Props) {
   const run = async (rawInput: string) => {
     const prompt = rawInput.trim();
     if (!prompt || loading) return;
+    setVoiceMessage('');
     const userMessage = createMessage('user', prompt);
     const history = [...messages, userMessage];
     setMessages(history);
@@ -105,16 +148,120 @@ export function DesktopAgent({ apps, activeWindowTitle, onAction }: Props) {
     setMessages((current) => [...current, createMessage('assistant', '已停止当前操作。')]);
   };
 
+  const stopVoiceInput = () => {
+    recognitionRef.current?.stop();
+  };
+
+  const cancelVoiceInput = () => {
+    voiceErrorRef.current = true;
+    recognitionRef.current?.abort();
+    recognitionRef.current = null;
+    if (voiceSubmitTimerRef.current !== null) window.clearTimeout(voiceSubmitTimerRef.current);
+    voiceSubmitTimerRef.current = null;
+    voiceTranscriptRef.current = '';
+    setVoiceState('idle');
+    setVoiceMessage('');
+  };
+
+  const startVoiceInput = () => {
+    if (loading || voiceState === 'transcribing') return;
+    if (voiceState === 'listening') {
+      stopVoiceInput();
+      return;
+    }
+
+    const speechWindow = window as typeof window & {
+      SpeechRecognition?: SpeechRecognitionConstructor;
+      webkitSpeechRecognition?: SpeechRecognitionConstructor;
+    };
+    const Recognition = speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
+    if (!Recognition) {
+      setVoiceMessage('当前浏览器不支持语音输入，请使用最新版 Chrome 或 Edge。');
+      return;
+    }
+
+    if (voiceSubmitTimerRef.current !== null) {
+      window.clearTimeout(voiceSubmitTimerRef.current);
+      voiceSubmitTimerRef.current = null;
+    }
+
+    const recognition = new Recognition();
+    recognition.lang = 'zh-CN';
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    voiceTranscriptRef.current = '';
+    voiceErrorRef.current = false;
+    recognitionRef.current = recognition;
+
+    recognition.onstart = () => {
+      setVoiceState('listening');
+      setVoiceMessage('正在聆听，说出你想让 Agent 执行的操作');
+    };
+    recognition.onresult = (event) => {
+      let transcript = '';
+      for (let index = 0; index < event.results.length; index += 1) {
+        transcript += event.results[index][0].transcript;
+      }
+      const normalizedTranscript = transcript.trim();
+      if (!normalizedTranscript) return;
+      voiceTranscriptRef.current = normalizedTranscript;
+      setInput(normalizedTranscript);
+      setVoiceMessage('正在识别你的指令…');
+    };
+    recognition.onerror = (event) => {
+      voiceErrorRef.current = true;
+      const errorMessages: Record<string, string> = {
+        'not-allowed': '麦克风权限未开启，请在浏览器地址栏中允许访问。',
+        'service-not-allowed': '浏览器已阻止语音识别服务，请检查站点权限。',
+        'audio-capture': '没有检测到可用的麦克风。',
+        'no-speech': '没有听到语音，请靠近麦克风再试一次。',
+        network: '语音识别网络连接失败，请稍后重试。',
+      };
+      setVoiceMessage(errorMessages[event.error] ?? '语音识别未完成，请再试一次。');
+      setVoiceState('idle');
+    };
+    recognition.onend = () => {
+      recognitionRef.current = null;
+      if (voiceErrorRef.current) return;
+      const transcript = voiceTranscriptRef.current.trim();
+      if (!transcript) {
+        setVoiceState('idle');
+        setVoiceMessage('没有识别到内容，请点击麦克风重试。');
+        return;
+      }
+      setVoiceState('transcribing');
+      setVoiceMessage('已听清，正在交给 Agent');
+      voiceSubmitTimerRef.current = window.setTimeout(() => {
+        voiceSubmitTimerRef.current = null;
+        setVoiceState('idle');
+        setVoiceMessage('');
+        void run(transcript);
+      }, reduceMotion ? 0 : 520);
+    };
+
+    try {
+      recognition.start();
+    } catch {
+      recognitionRef.current = null;
+      setVoiceState('idle');
+      setVoiceMessage('语音输入启动失败，请稍后重试。');
+    }
+  };
+
   const clearMessages = () => {
     abortRef.current?.abort();
     abortRef.current = null;
+    cancelVoiceInput();
     setLoading(false);
+    setVoiceState('idle');
+    setVoiceMessage('');
     setInput('');
     setMessages([createMessage('assistant', '想打开什么？')]);
   };
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
+    if (voiceState !== 'idle') return;
     void run(input);
   };
 
@@ -209,7 +356,10 @@ export function DesktopAgent({ apps, activeWindowTitle, onAction }: Props) {
               </div>
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={() => {
+                  cancelVoiceInput();
+                  setOpen(false);
+                }}
                 onPointerDown={(event) => event.stopPropagation()}
                 className="flex h-8 w-8 items-center justify-center rounded-full text-xl text-white/55 transition hover:bg-white/10 hover:text-white"
                 aria-label="关闭 Agent"
@@ -262,20 +412,78 @@ export function DesktopAgent({ apps, activeWindowTitle, onAction }: Props) {
               </div>
             ) : null}
 
-            <form onSubmit={onSubmit} className="flex shrink-0 items-end gap-2 border-t border-white/10 p-3">
-              <textarea
-                value={input}
-                onChange={(event) => setInput(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' && !event.shiftKey) {
-                    event.preventDefault();
-                    if (input.trim()) void run(input);
-                  }
-                }}
-                rows={1}
-                placeholder="输入指令…"
-                className="max-h-24 min-h-10 flex-1 resize-none rounded-xl border border-white/10 bg-white/8 px-3 py-2 text-sm text-white outline-none placeholder:text-white/32 focus:border-sky-400/55 focus:ring-1 focus:ring-sky-400/30"
-              />
+            <form onSubmit={onSubmit} className="shrink-0 border-t border-white/10 p-3">
+              <AnimatePresence initial={false}>
+                {voiceMessage ? (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0, y: 4 }}
+                    animate={{ height: 'auto', opacity: 1, y: 0 }}
+                    exit={{ height: 0, opacity: 0, y: 4 }}
+                    className="overflow-hidden"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    <div className="mb-2 flex min-h-8 items-center gap-2 rounded-lg border border-sky-300/15 bg-sky-400/10 px-2.5 py-1.5 text-xs text-sky-100/78">
+                      {voiceState === 'listening' ? (
+                        <span className="flex h-4 items-center gap-0.5" aria-hidden>
+                          {[0, 1, 2, 3].map((index) => (
+                            <motion.span
+                              key={index}
+                              className="w-0.5 rounded-full bg-sky-300"
+                              animate={reduceMotion ? { height: 8 } : { height: [4, 14, 6, 11, 4] }}
+                              transition={{ duration: 0.8, repeat: Infinity, delay: index * 0.1 }}
+                            />
+                          ))}
+                        </span>
+                      ) : (
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-sky-300" aria-hidden />
+                      )}
+                      <span>{voiceMessage}</span>
+                    </div>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+              <div className="flex items-end gap-2">
+                <textarea
+                  value={input}
+                  onChange={(event) => setInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                      event.preventDefault();
+                      if (input.trim() && voiceState === 'idle') void run(input);
+                    }
+                  }}
+                  rows={1}
+                  placeholder={voiceState === 'listening' ? '请说话…' : '输入指令…'}
+                  className="max-h-24 min-h-10 flex-1 resize-none rounded-xl border border-white/10 bg-white/8 px-3 py-2 text-sm text-white outline-none placeholder:text-white/32 focus:border-sky-400/55 focus:ring-1 focus:ring-sky-400/30"
+                />
+                <button
+                  type="button"
+                  onClick={startVoiceInput}
+                  disabled={loading || voiceState === 'transcribing'}
+                  className={[
+                    'relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition disabled:cursor-default disabled:opacity-35',
+                    voiceState === 'listening'
+                      ? 'border-sky-300/45 bg-sky-400 text-white shadow-[0_0_22px_rgba(56,189,248,0.38)]'
+                      : 'border-white/10 bg-white/8 text-white/60 hover:bg-white/14 hover:text-white',
+                  ].join(' ')}
+                  aria-label={voiceState === 'listening' ? '结束语音输入' : '使用语音输入'}
+                  aria-pressed={voiceState === 'listening'}
+                  title={voiceState === 'listening' ? '结束语音输入' : '语音输入'}
+                >
+                  {voiceState === 'listening' && !reduceMotion ? (
+                    <motion.span
+                      className="absolute inset-0 rounded-xl border border-sky-200/65"
+                      animate={{ scale: [1, 1.22], opacity: [0.8, 0] }}
+                      transition={{ duration: 1.1, repeat: Infinity }}
+                      aria-hidden
+                    />
+                  ) : null}
+                  <svg viewBox="0 0 24 24" className="relative h-[1.125rem] w-[1.125rem]" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <rect x="9" y="3" width="6" height="11" rx="3" />
+                    <path d="M5.5 10.5a6.5 6.5 0 0 0 13 0M12 17v4M9 21h6" />
+                  </svg>
+                </button>
               <button
                 type="button"
                 onClick={clearMessages}
@@ -304,7 +512,7 @@ export function DesktopAgent({ apps, activeWindowTitle, onAction }: Props) {
               ) : (
                 <button
                   type="submit"
-                  disabled={!input.trim()}
+                  disabled={!input.trim() || voiceState !== 'idle'}
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-500 text-white transition hover:bg-sky-400 disabled:cursor-default disabled:opacity-35"
                   aria-label="发送"
                 >
@@ -314,6 +522,7 @@ export function DesktopAgent({ apps, activeWindowTitle, onAction }: Props) {
                   </svg>
                 </button>
               )}
+              </div>
             </form>
           </motion.section>
         ) : null}
