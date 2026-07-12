@@ -45,6 +45,10 @@ function GitHubMark({ className }: { className?: string }) {
 }
 
 export function AppGlyph({ iconKey, fallback, className = 'h-8 w-8' }: Props) {
+  if (fallback.startsWith('/')) {
+    return <img src={fallback} alt="" aria-hidden className={`${className} object-contain`} />;
+  }
+
   if (iconKey === 'github') {
     return <GitHubMark className={className} />;
   }

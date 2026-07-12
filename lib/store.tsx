@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { chatAgnesApp, defaultDock, defaultPages, defaultWallpaper, skillsApp } from '@/lib/defaultData';
+import { chatAgnesApp, defaultDock, defaultPages, defaultWallpaper, grokSwitchApp, skillsApp } from '@/lib/defaultData';
 import { findFolderById, isDescendantFolder, isFolder } from '@/lib/folders';
 import { readSiteWallpaper } from '@/lib/githubAssets';
 import type { AppItem, DesktopIconPosition, HomePage, HomeItem } from '@/lib/types';
@@ -89,11 +89,11 @@ function appendItemToFolder(items: HomeItem[], folderId: string, app: AppItem): 
   });
 }
 
-function ensureChatAgnesAppInPages(value: HomePage[]): HomePage[] {
-  if (value.some((page) => hasItemWithId(page.items, chatAgnesApp.id))) return value;
+function ensurePortfolioAppInPages(value: HomePage[], app: AppItem): HomePage[] {
+  if (value.some((page) => hasItemWithId(page.items, app.id))) return value;
   return value.map((page) => (
     page.id === 'page-1'
-      ? { ...page, items: appendItemToFolder(page.items, 'portfolio-lab', chatAgnesApp) }
+      ? { ...page, items: appendItemToFolder(page.items, 'portfolio-lab', app) }
       : page
   ));
 }
@@ -103,7 +103,7 @@ function migrateSkillsAppInPages(value: HomePage[]): HomePage[] {
     ...page,
     items: migrateSkillsAppInItems(page.items),
   }));
-  return ensureChatAgnesAppInPages(migrated);
+  return [chatAgnesApp, grokSwitchApp].reduce(ensurePortfolioAppInPages, migrated);
 }
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
