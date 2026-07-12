@@ -45,6 +45,16 @@ export const chatAgnesApp: AppItem = external({
   techStack: ['AI App', 'Chat', 'GitHub Pages'],
 });
 
+export const grokSwitchApp: AppItem = external({
+  id: 'grok-switch',
+  title: 'grok_switch',
+  icon: '/Paradox-s-portfolio/grok-switch.svg',
+  color: 'from-zinc-900 to-black',
+  description: '快速切换和管理 Grok Build 配置的实用工具。',
+  url: 'https://1parado.github.io/grok-build-switch/',
+  techStack: ['Grok', '配置切换', 'GitHub Pages'],
+});
+
 export const defaultPages: HomePage[] = [
   {
     id: 'page-1',
@@ -87,6 +97,7 @@ export const defaultPages: HomePage[] = [
             techStack: ['React', 'TypeScript', 'Tailwind CSS', 'Netlify', '表单交互'],
           }),
           chatAgnesApp,
+          grokSwitchApp,
         ],
       }),
       builtin({ id: 'open-source', title: '开源贡献', icon: '🐙', iconKey: 'github', color: 'from-neutral-500 to-neutral-950', description: '参与过的开源项目、技术栈和社区数据。', builtinKey: 'open-source', techStack: ['GitHub', 'Code Review', 'TypeScript', 'AI Agent'] }),
