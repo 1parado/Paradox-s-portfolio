@@ -55,6 +55,16 @@ export const grokSwitchApp: AppItem = external({
   techStack: ['Grok', '配置切换', 'GitHub Pages'],
 });
 
+export const learnPiApp: AppItem = external({
+  id: 'learn-pi',
+  title: 'learn-pi',
+  icon: 'π',
+  color: 'from-indigo-400 to-cyan-500',
+  description: 'Learn Pi 在线应用。',
+  url: 'https://1parado.github.io/Learn-Pi',
+  techStack: ['GitHub Pages'],
+});
+
 export const musicApp: AppItem = builtin({
   id: 'music',
   title: '音乐',
@@ -110,6 +120,7 @@ export const defaultPages: HomePage[] = [
           }),
           chatAgnesApp,
           grokSwitchApp,
+          learnPiApp,
         ],
       }),
       builtin({ id: 'open-source', title: '开源贡献', icon: '🐙', iconKey: 'github', color: 'from-neutral-500 to-neutral-950', description: '参与过的开源项目、技术栈和社区数据。', builtinKey: 'open-source', techStack: ['GitHub', 'Code Review', 'TypeScript', 'AI Agent'] }),
