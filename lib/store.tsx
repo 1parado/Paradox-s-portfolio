@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { chatAgnesApp, defaultDock, defaultPages, defaultWallpaper, grokSwitchApp, musicApp, skillsApp } from '@/lib/defaultData';
+import { chatAgnesApp, defaultDock, defaultPages, defaultWallpaper, grokSwitchApp, learnPiApp, musicApp, skillsApp } from '@/lib/defaultData';
 import { findFolderById, isDescendantFolder, isFolder } from '@/lib/folders';
 import { readSiteWallpaper } from '@/lib/githubAssets';
 import type { AppItem, DesktopIconPosition, HomePage, HomeItem } from '@/lib/types';
@@ -110,7 +110,7 @@ function migrateSkillsAppInPages(value: HomePage[]): HomePage[] {
     ...page,
     items: migrateSkillsAppInItems(page.items),
   }));
-  const withPortfolioApps = [chatAgnesApp, grokSwitchApp].reduce(ensurePortfolioAppInPages, migrated);
+  const withPortfolioApps = [chatAgnesApp, grokSwitchApp, learnPiApp].reduce(ensurePortfolioAppInPages, migrated);
   return ensureTopLevelAppInPage(withPortfolioApps, 'page-1', musicApp);
 }
 
