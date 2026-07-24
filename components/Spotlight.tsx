@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { Search } from 'lucide-react';
 import { AppGlyph } from '@/components/AppGlyph';
 import { flattenAllItems, isFolder } from '@/lib/folders';
 import type { AppItem, FolderItem, HomePage } from '@/lib/types';
@@ -108,14 +109,11 @@ export function Spotlight({ pages, dock, initialQuery = '', onOpen, onOpenFolder
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -12, scale: 0.98 }}
         transition={{ type: 'spring', stiffness: 320, damping: 28 }}
-        className="w-full max-w-xl overflow-hidden rounded-[1.6rem] border border-white/15 bg-zinc-900/85 shadow-[0_30px_120px_rgba(0,0,0,0.55)] backdrop-blur-3xl"
+        className="w-full max-w-xl overflow-hidden rounded-[1.6rem] border border-white/14 bg-zinc-950/90 shadow-glass backdrop-blur-3xl"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-center gap-3 px-4">
-          <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0 text-white/55" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="7" />
-            <path d="m20 20-3.5-3.5" />
-          </svg>
+          <Search className="h-5 w-5 shrink-0 text-white/50" strokeWidth={1.9} />
           <input
             ref={inputRef}
             value={query}
@@ -124,7 +122,7 @@ export function Spotlight({ pages, dock, initialQuery = '', onOpen, onOpenFolder
             placeholder="Spotlight 搜索：应用、文件夹、链接…"
             className="h-14 flex-1 bg-transparent text-lg text-white outline-none placeholder:text-white/35"
           />
-          <kbd className="hidden rounded-md bg-white/10 px-2 py-1 text-[11px] text-white/55 sm:inline">Esc 关闭</kbd>
+          <kbd className="hidden rounded-md border border-white/10 bg-white/8 px-2 py-1 font-mono text-[11px] text-white/50 sm:inline">Esc</kbd>
         </div>
         <div className="h-px bg-white/10" />
         <div ref={listRef} className="max-h-[52vh] overflow-y-auto p-2">

@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { Trash2 } from 'lucide-react';
 import { AppGlyph } from '@/components/AppGlyph';
 import type { AppItem } from '@/lib/types';
 
@@ -22,7 +23,7 @@ export function MacTrashPanel({ trash, onClose, onRestore, onEmpty, onOpen }: Pr
       onClick={onClose}
     >
       <motion.section
-        className="flex h-[min(560px,72vh)] w-[min(720px,88vw)] flex-col overflow-hidden rounded-[1.1rem] border border-white/18 bg-zinc-950/92 shadow-[0_32px_110px_rgba(0,0,0,0.5)]"
+        className="flex h-[min(560px,72vh)] w-[min(720px,88vw)] flex-col overflow-hidden rounded-[1.25rem] border border-white/16 bg-zinc-950/94 shadow-glass"
         initial={{ scale: 0.96, y: 12 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.96, y: 12 }}
@@ -35,7 +36,10 @@ export function MacTrashPanel({ trash, onClose, onRestore, onEmpty, onOpen }: Pr
             <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
             <span className="h-3 w-3 rounded-full bg-[#28c840]" />
           </div>
-          <div className="ml-2 text-sm font-semibold text-white/85">废纸篓</div>
+          <div className="ml-2 flex items-center gap-2 text-sm font-semibold text-white/85">
+            <Trash2 className="h-4 w-4 text-white/55" strokeWidth={1.8} />
+            废纸篓
+          </div>
           <div className="ml-auto flex items-center gap-2">
             <button
               type="button"
@@ -58,7 +62,7 @@ export function MacTrashPanel({ trash, onClose, onRestore, onEmpty, onOpen }: Pr
                 <div key={item.id} className="group flex flex-col items-center gap-1.5 rounded-lg p-2 text-center">
                   <button
                     type="button"
-                    className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br text-2xl shadow-lg transition group-hover:scale-105"
+                    className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br shadow-lg transition group-hover:scale-105 ${item.color}`}
                     onClick={() => {
                       onClose();
                       onOpen(item);
@@ -78,8 +82,10 @@ export function MacTrashPanel({ trash, onClose, onRestore, onEmpty, onOpen }: Pr
               ))}
             </div>
           ) : (
-            <div className="flex h-40 flex-col items-center justify-center gap-2 text-sm text-white/45">
-              <span className="text-4xl">🗑</span>
+            <div className="flex h-40 flex-col items-center justify-center gap-3 text-sm text-white/45">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
+                <Trash2 className="h-7 w-7 text-white/40" strokeWidth={1.5} />
+              </div>
               <span>废纸篓是空的。</span>
             </div>
           )}

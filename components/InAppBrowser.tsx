@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { AppGlyph } from '@/components/AppGlyph';
 import { getBuiltinApp } from '@/components/builtin/registry';
 import type { AppItem } from '@/lib/types';
 
@@ -59,7 +60,9 @@ export function InAppBrowser({ app, onClose }: Props) {
                 />
               ) : (
                 <div className="flex h-full flex-col items-center justify-center gap-4 rounded-[1.25rem] border border-dashed border-white/15 bg-black/20 text-center">
-                  <div className="text-5xl">{app.icon}</div>
+                  <div className={`flex h-20 w-20 items-center justify-center rounded-[1.5rem] bg-gradient-to-br shadow-lg ${app.color}`}>
+                    <AppGlyph iconKey={app.iconKey} fallback={app.icon} className="h-10 w-10 text-white" />
+                  </div>
                   <div>
                     <div className="text-xl font-semibold">{app.title}</div>
                     <div className="mt-2 text-sm text-white/65">该作品不支持内嵌预览，请在新标签打开。</div>

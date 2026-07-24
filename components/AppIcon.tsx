@@ -58,12 +58,13 @@ export function AppIcon({ app, editing, onOpen, onLongPress }: Props) {
     >
       <div
         className={[
-          'flex h-16 w-16 items-center justify-center rounded-[1.35rem] bg-gradient-to-br text-3xl shadow-lg shadow-black/20',
+          'relative flex h-16 w-16 items-center justify-center rounded-[1.35rem] bg-gradient-to-br shadow-lg shadow-black/25 ring-1 ring-white/20',
           app.color,
           editing ? 'app-jiggle' : '',
         ].join(' ')}
       >
-        <AppGlyph iconKey={app.iconKey} fallback={app.icon} className="h-9 w-9" />
+        <span className="absolute inset-x-2 top-1 h-3 rounded-full bg-white/25 blur-[0.5px]" />
+        <AppGlyph iconKey={app.iconKey} fallback={app.icon} className="relative h-8 w-8 text-white" />
       </div>
       <span className="line-clamp-2 text-xs font-medium text-white/90">{app.title}</span>
     </motion.button>

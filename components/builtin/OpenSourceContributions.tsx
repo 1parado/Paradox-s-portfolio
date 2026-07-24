@@ -59,7 +59,7 @@ const repos: Repo[] = [
         meta: 'cmd/opencodereview/llm_cmd.go · +8 / -2',
         details: [
           '检测空响应，显示 (empty response)',
-          '测试完成后明确提示 ✓ Connection test successful',
+          '测试完成后明确提示 Connection test successful',
           '顺带把 MaxTokens 调大以兼容 reasoning 模型测试',
           '评审：lizhengfeng101 先 COMMENTED 提了两点格式建议（混用 Println/Printf、多余空行），修改后 APPROVED 合并',
         ],

@@ -201,7 +201,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             {
               id: folderId,
               title: '新建文件夹',
-              icon: '🗂️',
+              icon: 'folder',
               iconKey: 'folder',
               color: 'from-slate-300 to-slate-600',
               description: '编辑模式中新建的文件夹，可继续整理作品入口。',
