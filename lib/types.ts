@@ -12,6 +12,7 @@ export type AppIconKey =
   | 'design'
   | 'folder'
   | 'github'
+  | 'globe'
   | 'lab'
   | 'mail'
   | 'music'
@@ -19,12 +20,14 @@ export type AppIconKey =
   | 'motion'
   | 'note'
   | 'photo'
+  | 'pi'
   | 'portfolio'
   | 'prompt'
   | 'reading'
   | 'resume'
   | 'settings'
   | 'skills'
+  | 'sparkles'
   | 'target'
   | 'writing';
 

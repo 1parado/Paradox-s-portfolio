@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { Check, LayoutGrid, Search, Settings2, Sparkles } from 'lucide-react';
 import type { AppItem } from '@/lib/types';
 
 type MenuAction = () => void;
@@ -45,7 +46,7 @@ type Props = {
 
 export function MacMenuBar({
   activeTitle,
-  activeApp,
+  activeApp: _activeApp,
   editing,
   windows,
   onFinder,
@@ -177,7 +178,7 @@ export function MacMenuBar({
       label: '窗口',
       items: [
         { label: 'Mission Control', shortcut: 'F3', onClick: () => run(onMissionControl) },
-        { label: hasActive ? '最小化' : '最小化', shortcut: '⌘M', disabled: !hasActive, onClick: () => run(onMinimizeActive) },
+        { label: '最小化', shortcut: '⌘M', disabled: !hasActive, onClick: () => run(onMinimizeActive) },
         { separator: true },
         ...(windows.length > 0
           ? windows.map((w) => ({ label: w.title, checked: w.title === activeTitle, onClick: () => run(() => onSelectWindow(w.id)) }))
@@ -198,11 +199,16 @@ export function MacMenuBar({
   return (
     <header
       ref={containerRef}
-      className="absolute inset-x-0 top-0 z-50 flex h-9 items-center justify-between border-b border-white/10 bg-zinc-950/28 px-3 text-[13px] text-white shadow-[0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-3xl"
+      className="absolute inset-x-0 top-0 z-50 flex h-9 items-center justify-between border-b border-white/10 bg-black/35 px-3 text-[13px] text-white shadow-[0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-3xl"
     >
       <nav className="flex min-w-0 items-center">
-        <button type="button" className="mr-1 text-[17px] font-semibold leading-none text-white" aria-label="Paradox menu" onClick={() => run(onSettings)}>
-          ◐
+        <button
+          type="button"
+          className="mr-1.5 flex h-7 w-7 items-center justify-center rounded-md text-cyan-200/90 transition hover:bg-white/10"
+          aria-label="Paradox menu"
+          onClick={() => run(onSettings)}
+        >
+          <Sparkles className="h-4 w-4" strokeWidth={1.75} />
         </button>
         {menus.map((menu) => (
           <div key={menu.id} className="relative">
@@ -222,12 +228,12 @@ export function MacMenuBar({
             </button>
             {openMenu === menu.id ? (
               <div
-                className="absolute left-0 top-8 z-50 min-w-[15rem] rounded-xl border border-white/15 bg-zinc-900/92 p-1 text-[13px] text-white shadow-[0_22px_70px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
+                className="absolute left-0 top-8 z-50 min-w-[15rem] rounded-xl border border-white/14 bg-zinc-950/94 p-1 text-[13px] text-white shadow-glass backdrop-blur-2xl"
                 onClick={(event) => event.stopPropagation()}
               >
                 {menu.items.map((item, index) => {
                   if (item.separator) {
-                    return <div key={`sep-${index}`} className="my-1 h-px bg-white/12" />;
+                    return <div key={`sep-${index}`} className="my-1 h-px bg-white/10" />;
                   }
                   return (
                     <button
@@ -243,9 +249,11 @@ export function MacMenuBar({
                         run(item.onClick);
                       }}
                     >
-                      <span className="w-4 text-center text-[11px] text-white/55">{item.checked ? '✓' : ''}</span>
+                      <span className="flex w-4 justify-center text-white/55">
+                        {item.checked ? <Check className="h-3.5 w-3.5" strokeWidth={2.2} /> : null}
+                      </span>
                       <span className="flex-1 truncate">{item.label}</span>
-                      {item.shortcut ? <span className="ml-auto text-[11px] text-white/45">{item.shortcut}</span> : null}
+                      {item.shortcut ? <span className="ml-auto font-mono text-[11px] text-white/40">{item.shortcut}</span> : null}
                     </button>
                   );
                 })}
@@ -255,20 +263,33 @@ export function MacMenuBar({
         ))}
       </nav>
 
-      <div className="flex items-center gap-1 text-white/82">
-        <button type="button" className="rounded-md px-2 py-0.5 transition hover:bg-white/10" onClick={onSpotlight} aria-label="Spotlight 搜索" title="Spotlight 搜索 ⌘Space">
-          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="7" />
-            <path d="m20 20-3.5-3.5" />
-          </svg>
+      <div className="flex items-center gap-0.5 text-white/82">
+        <button
+          type="button"
+          className="rounded-md p-1.5 transition hover:bg-white/10"
+          onClick={onSpotlight}
+          aria-label="Spotlight 搜索"
+          title="Spotlight 搜索 ⌘Space"
+        >
+          <Search className="h-3.5 w-3.5" strokeWidth={2} />
         </button>
-        <button type="button" className="hidden rounded-md px-2 py-0.5 transition hover:bg-white/10 md:inline" onClick={onMissionControl} aria-label="Mission Control">
-          ⌘⇳
+        <button
+          type="button"
+          className="hidden rounded-md p-1.5 transition hover:bg-white/10 md:inline-flex"
+          onClick={onMissionControl}
+          aria-label="Mission Control"
+        >
+          <LayoutGrid className="h-3.5 w-3.5" strokeWidth={2} />
         </button>
-        <button type="button" className="rounded-md px-2 py-0.5 transition hover:bg-white/10" onClick={onControlCenter} aria-label="Control Center">
-          ◫
+        <button
+          type="button"
+          className="rounded-md p-1.5 transition hover:bg-white/10"
+          onClick={onControlCenter}
+          aria-label="Control Center"
+        >
+          <Settings2 className="h-3.5 w-3.5" strokeWidth={2} />
         </button>
-        <span className="tabular-nums">{time || '--:--'}</span>
+        <span className="ml-1 font-mono text-[12px] tabular-nums tracking-tight">{time || '--:--'}</span>
       </div>
     </header>
   );

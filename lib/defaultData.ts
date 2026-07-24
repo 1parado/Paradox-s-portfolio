@@ -6,6 +6,11 @@ export const wallpaperPresets: WallpaperPreset[] = [
   { id: 'graphite', label: 'Graphite', value: 'linear-gradient(150deg, #18181b 0%, #52525b 46%, #111827 100%)' },
   { id: 'ember', label: 'Ember', value: 'linear-gradient(155deg, #1c1917 0%, #9a3412 46%, #581c87 100%)' },
   { id: 'field', label: 'Field', value: 'linear-gradient(160deg, #052e16 0%, #0f766e 48%, #365314 100%)' },
+  {
+    id: 'aurora',
+    label: 'Aurora',
+    value: 'radial-gradient(ellipse 80% 60% at 20% 20%, rgba(103,232,249,0.35), transparent 55%), radial-gradient(ellipse 70% 50% at 80% 30%, rgba(167,139,250,0.32), transparent 50%), radial-gradient(ellipse 60% 50% at 50% 90%, rgba(251,113,133,0.22), transparent 50%), linear-gradient(160deg, #03050a 0%, #0b1220 45%, #12081c 100%)',
+  },
 ];
 
 const external = (overrides: Partial<AppItem> & Pick<AppItem, 'id' | 'title' | 'icon' | 'color' | 'description'>): AppItem => ({
@@ -26,7 +31,7 @@ const folder = (overrides: Omit<FolderItem, 'type'>): FolderItem => ({
 export const skillsApp: AppItem = builtin({
   id: 'folder-prompt',
   title: 'Skills',
-  icon: '🧰',
+  icon: 'skills',
   iconKey: 'skills',
   color: 'from-amber-300 to-cyan-500',
   description: '我使用的 Codex skills 列表。',
@@ -37,7 +42,7 @@ export const skillsApp: AppItem = builtin({
 export const chatAgnesApp: AppItem = external({
   id: 'chatagnes',
   title: 'ChatAgnes',
-  icon: '🤖',
+  icon: 'agent',
   iconKey: 'agent',
   color: 'from-violet-500 to-cyan-500',
   description: 'AI 对话应用 ChatAgnes。',
@@ -58,7 +63,8 @@ export const grokSwitchApp: AppItem = external({
 export const learnPiApp: AppItem = external({
   id: 'learn-pi',
   title: 'learn-pi',
-  icon: 'π',
+  icon: 'pi',
+  iconKey: 'pi',
   color: 'from-indigo-400 to-cyan-500',
   description: 'Learn Pi 在线应用。',
   url: 'https://1parado.github.io/Learn-Pi',
@@ -68,7 +74,7 @@ export const learnPiApp: AppItem = external({
 export const musicApp: AppItem = builtin({
   id: 'music',
   title: '音乐',
-  icon: '🎵',
+  icon: 'music',
   iconKey: 'music',
   color: 'from-fuchsia-500 to-indigo-600',
   description: 'Apple Music 风格播放器，支持在线搜索、预览播放、曲目切换和专辑封面。',
@@ -81,23 +87,23 @@ export const defaultPages: HomePage[] = [
     id: 'page-1',
     title: '作品',
     items: [
-      external({ id: 'blog', title: '博客', icon: '✍️', iconKey: 'blog', color: 'from-orange-400 to-rose-500', description: '写作、思考与实验记录。', url: 'https://1parado.github.io/' }),
-      builtin({ id: 'calculator', title: '计算器', icon: '🧮', iconKey: 'calculator', color: 'from-zinc-500 to-zinc-800', description: '本地 React 组件实现的 iOS 风格计算器。', builtinKey: 'calculator' }),
+      external({ id: 'blog', title: '博客', icon: 'blog', iconKey: 'blog', color: 'from-orange-400 to-rose-500', description: '写作、思考与实验记录。', url: 'https://1parado.github.io/' }),
+      builtin({ id: 'calculator', title: '计算器', icon: 'calculator', iconKey: 'calculator', color: 'from-zinc-500 to-zinc-800', description: '本地 React 组件实现的 iOS 风格计算器。', builtinKey: 'calculator' }),
       musicApp,
       folder({
         id: 'portfolio-lab',
         title: '作品集',
-        icon: '🪄',
+        icon: 'portfolio',
         iconKey: 'portfolio',
         color: 'from-cyan-400 to-blue-600',
         description: '个人项目精选集合：实验 Demo、语音日历与带访问口令的工具入口。',
         children: [
-          external({ id: 'mini-world', title: 'Mini world', icon: '🌐', color: 'from-sky-400 to-indigo-500', description: 'Mini world 项目演示。', url: 'https://1parado.github.io/mini-world/', techStack: ['JavaScript'] }),
-          builtin({ id: 'voice-calendar', title: '语音日历', icon: '📅', iconKey: 'calendar', color: 'from-cyan-400 to-blue-600', description: '七牛云暑期实训项目演示入口。', builtinKey: 'voice-calendar', techStack: ['语音交互', '日历管理', '七牛云', '视频演示'] }),
+          external({ id: 'mini-world', title: 'Mini world', icon: 'globe', iconKey: 'globe', color: 'from-sky-400 to-indigo-500', description: 'Mini world 项目演示。', url: 'https://1parado.github.io/mini-world/', techStack: ['JavaScript'] }),
+          builtin({ id: 'voice-calendar', title: '语音日历', icon: 'calendar', iconKey: 'calendar', color: 'from-cyan-400 to-blue-600', description: '七牛云暑期实训项目演示入口。', builtinKey: 'voice-calendar', techStack: ['语音交互', '日历管理', '七牛云', '视频演示'] }),
           external({
             id: 'bookmark-nav',
             title: '书签导航',
-            icon: '🧭',
+            icon: 'bookmark',
             iconKey: 'bookmark',
             color: 'from-emerald-400 to-teal-600',
             description: '常用链接与收藏导航，点击后需要独立密码。',
@@ -109,7 +115,7 @@ export const defaultPages: HomePage[] = [
           external({
             id: 'mentor-review',
             title: '导师评分',
-            icon: '🧑‍🏫',
+            icon: 'mentor',
             iconKey: 'mentor',
             color: 'from-fuchsia-500 to-violet-600',
             description: '导师评审面板与反馈，点击后需要独立密码。',
@@ -123,17 +129,17 @@ export const defaultPages: HomePage[] = [
           learnPiApp,
         ],
       }),
-      builtin({ id: 'open-source', title: '开源贡献', icon: '🐙', iconKey: 'github', color: 'from-neutral-500 to-neutral-950', description: '参与过的开源项目、技术栈和社区数据。', builtinKey: 'open-source', techStack: ['GitHub', 'Code Review', 'TypeScript', 'AI Agent'] }),
+      builtin({ id: 'open-source', title: '开源贡献', icon: 'github', iconKey: 'github', color: 'from-neutral-500 to-neutral-950', description: '参与过的开源项目、技术栈和社区数据。', builtinKey: 'open-source', techStack: ['GitHub', 'Code Review', 'TypeScript', 'AI Agent'] }),
       folder({
         id: 'starter-folder',
         title: '灵感',
-        icon: '🗂️',
+        icon: 'folder',
         iconKey: 'folder',
         color: 'from-slate-300 to-slate-600',
         description: '写作、动效和界面实验的临时集合。',
         children: [
-          external({ id: 'folder-motion', title: '动效', icon: '🎞️', iconKey: 'motion', color: 'from-indigo-400 to-blue-600', description: 'Motion 与转场设计记录。', url: 'https://1parado.github.io/' }),
-          external({ id: 'folder-notes', title: '笔记', icon: '📝', iconKey: 'note', color: 'from-amber-300 to-orange-500', description: '公开写作与想法碎片。', url: 'https://1parado.github.io/' }),
+          external({ id: 'folder-motion', title: '动效', icon: 'motion', iconKey: 'motion', color: 'from-indigo-400 to-blue-600', description: 'Motion 与转场设计记录。', url: 'https://1parado.github.io/' }),
+          external({ id: 'folder-notes', title: '笔记', icon: 'note', iconKey: 'note', color: 'from-amber-300 to-orange-500', description: '公开写作与想法碎片。', url: 'https://1parado.github.io/' }),
           skillsApp,
         ],
       }),
@@ -143,26 +149,26 @@ export const defaultPages: HomePage[] = [
     id: 'page-2',
     title: '实验',
     items: [
-      builtin({ id: 'writing', title: '书单', icon: '📚', iconKey: 'writing', color: 'from-amber-300 to-red-500', description: '读过的书：78 本，Notion 表格风格。', builtinKey: 'booklist' }),
+      builtin({ id: 'writing', title: '书单', icon: 'writing', iconKey: 'writing', color: 'from-amber-300 to-red-500', description: '读过的书：78 本，Notion 表格风格。', builtinKey: 'booklist' }),
     ],
   },
   {
     id: 'page-3',
     title: '链接',
     items: [
-      external({ id: 'github', title: 'GitHub', icon: '🐙', iconKey: 'github', color: 'from-neutral-500 to-neutral-950', description: '开源项目、代码与实验。', url: 'https://github.com/1parado', externalOnly: true }),
-      builtin({ id: 'email', title: '邮箱', icon: '📮', iconKey: 'mail', color: 'from-amber-400 to-orange-600', description: '邮件联系与合作。', builtinKey: 'contact' }),
-      builtin({ id: 'about', title: '关于我', icon: '🙋', iconKey: 'about', color: 'from-sky-400 to-indigo-600', description: '姓名、昵称、邮箱与爱好。', builtinKey: 'about' }),
-      builtin({ id: 'resume', title: '简历', icon: '📄', iconKey: 'resume', color: 'from-teal-400 to-cyan-600', description: '教育经历、实习、项目与技能。', builtinKey: 'resume' }),
+      external({ id: 'github', title: 'GitHub', icon: 'github', iconKey: 'github', color: 'from-neutral-500 to-neutral-950', description: '开源项目、代码与实验。', url: 'https://github.com/1parado', externalOnly: true }),
+      builtin({ id: 'email', title: '邮箱', icon: 'mail', iconKey: 'mail', color: 'from-amber-400 to-orange-600', description: '邮件联系与合作。', builtinKey: 'contact' }),
+      builtin({ id: 'about', title: '关于我', icon: 'about', iconKey: 'about', color: 'from-sky-400 to-indigo-600', description: '姓名、昵称、邮箱与爱好。', builtinKey: 'about' }),
+      builtin({ id: 'resume', title: '简历', icon: 'resume', iconKey: 'resume', color: 'from-teal-400 to-cyan-600', description: '教育经历、实习、项目与技能。', builtinKey: 'resume' }),
     ],
   },
 ];
 
 export const defaultDock: AppItem[] = [
-  external({ id: 'dock-blog', title: '博客', icon: '✍️', iconKey: 'blog', color: 'from-orange-400 to-rose-500', description: '博客快捷入口。', url: 'https://1parado.github.io/' }),
-  builtin({ id: 'dock-settings', title: '设置', icon: '⚙️', iconKey: 'settings', color: 'from-neutral-400 to-neutral-700', description: '壁纸、编辑模式与重置。', builtinKey: 'settings' }),
-  builtin({ id: 'dock-photos', title: '照片', icon: '🖼️', iconKey: 'photo', color: 'from-pink-400 to-rose-500', description: '相册：进入整理模式后可上传图片，存入 GitHub。', builtinKey: 'photo' }),
-  builtin({ id: 'dock-notepad', title: '记事本', icon: '📝', iconKey: 'note', color: 'from-amber-300 to-orange-500', description: '记事本：进入整理模式后可编辑，内容存入 GitHub。', builtinKey: 'notepad' }),
+  external({ id: 'dock-blog', title: '博客', icon: 'blog', iconKey: 'blog', color: 'from-orange-400 to-rose-500', description: '博客快捷入口。', url: 'https://1parado.github.io/' }),
+  builtin({ id: 'dock-settings', title: '设置', icon: 'settings', iconKey: 'settings', color: 'from-neutral-400 to-neutral-700', description: '壁纸、编辑模式与重置。', builtinKey: 'settings' }),
+  builtin({ id: 'dock-photos', title: '照片', icon: 'photo', iconKey: 'photo', color: 'from-pink-400 to-rose-500', description: '相册：进入整理模式后可上传图片，存入 GitHub。', builtinKey: 'photo' }),
+  builtin({ id: 'dock-notepad', title: '记事本', icon: 'note', iconKey: 'note', color: 'from-amber-300 to-orange-500', description: '记事本：进入整理模式后可编辑，内容存入 GitHub。', builtinKey: 'notepad' }),
 ];
 
 // 站点级壁纸：与 uploads/wallpaper.json 中由编辑模式写入的站点壁纸保持一致，

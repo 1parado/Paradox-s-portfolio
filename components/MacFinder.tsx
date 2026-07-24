@@ -2,6 +2,19 @@
 
 import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import {
+  AppWindow,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Clock3,
+  FileText,
+  HardDrive,
+  LayoutGrid,
+  List,
+  Monitor,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { AppGlyph } from '@/components/AppGlyph';
 import type { AppIconKey, AppItem, FolderItem, HomePage } from '@/lib/types';
 
@@ -27,13 +40,15 @@ type FSNode = {
   size: string;
 };
 
-const SIDEBAR_FAVORITES = [
-  { id: 'desktop', name: '桌面', icon: '🖥️' },
-  { id: 'applications', name: '应用程序', icon: '🅰️' },
-  { id: 'recent', name: '最近', icon: '🕑' },
-  { id: 'documents', name: '文档', icon: '📄' },
+const SIDEBAR_FAVORITES: { id: string; name: string; Icon: LucideIcon }[] = [
+  { id: 'desktop', name: '桌面', Icon: Monitor },
+  { id: 'applications', name: '应用程序', Icon: AppWindow },
+  { id: 'recent', name: '最近', Icon: Clock3 },
+  { id: 'documents', name: '文档', Icon: FileText },
 ];
-const SIDEBAR_LOCATIONS = [{ id: 'paradox-hd', name: 'Paradox HD', icon: '💽' }];
+const SIDEBAR_LOCATIONS: { id: string; name: string; Icon: LucideIcon }[] = [
+  { id: 'paradox-hd', name: 'Paradox HD', Icon: HardDrive },
+];
 
 const kindLabel: Record<FSKind, string> = {
   folder: '文件夹',
@@ -63,7 +78,7 @@ function buildTree(pages: HomePage[], dock: AppItem[]): FSNode {
     id: page.id,
     name: page.title,
     kind: 'folder' as const,
-    icon: '🗂️',
+    icon: 'folder',
     iconKey: 'folder',
     color: 'from-slate-300 to-slate-600',
     children: page.items.map(toItemNode),
@@ -75,7 +90,8 @@ function buildTree(pages: HomePage[], dock: AppItem[]): FSNode {
     id: 'applications',
     name: '应用程序',
     kind: 'folder',
-    icon: '🅰️',
+    icon: 'apps',
+    iconKey: 'portfolio',
     children: dock.map(toItemNode),
     modified: '2026-07-08 09:41',
     size: `${dock.length} 项`,
@@ -85,7 +101,8 @@ function buildTree(pages: HomePage[], dock: AppItem[]): FSNode {
     id: 'desktop',
     name: '桌面',
     kind: 'folder',
-    icon: '🖥️',
+    icon: 'desktop',
+    iconKey: 'design',
     children: pages.flatMap((page) => page.items.map(toItemNode)),
     modified: '2026-07-08 09:41',
     size: `${pages.flatMap((p) => p.items).length} 项`,
@@ -95,7 +112,8 @@ function buildTree(pages: HomePage[], dock: AppItem[]): FSNode {
     id: 'documents',
     name: '文档',
     kind: 'folder',
-    icon: '📄',
+    icon: 'docs',
+    iconKey: 'note',
     children: pages.flatMap((page) => page.items).filter((i) => i.type !== 'external').map(toItemNode),
     modified: '2026-07-08 09:41',
     size: '-- 项',
@@ -105,7 +123,8 @@ function buildTree(pages: HomePage[], dock: AppItem[]): FSNode {
     id: 'recent',
     name: '最近使用',
     kind: 'folder',
-    icon: '🕑',
+    icon: 'recent',
+    iconKey: 'chart',
     children: [...pages.flatMap((p) => p.items), ...dock].slice(0, 8).map(toItemNode),
     modified: '2026-07-08 09:41',
     size: '8 项',
@@ -115,7 +134,8 @@ function buildTree(pages: HomePage[], dock: AppItem[]): FSNode {
     id: 'paradox-hd',
     name: 'Paradox HD',
     kind: 'folder',
-    icon: '💽',
+    icon: 'drive',
+    iconKey: 'archive',
     modified: '2026-07-08 09:41',
     size: `${pageFolders.length + 4} 项`,
     children: [desktop, applications, documents, recent, ...pageFolders],
@@ -213,48 +233,66 @@ export function MacFinder({ pages, dock, onClose, onOpen }: Props) {
           </div>
           <p className="px-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40">收藏</p>
           <div className="mt-1.5 grid gap-0.5 text-sm">
-            {SIDEBAR_FAVORITES.map((fav) => (
-              <button
-                key={fav.id}
-                type="button"
-                className={[
-                  'flex items-center gap-2 rounded-md px-2 py-1 text-left transition',
-                  current.id === fav.id ? 'bg-sky-500/30 text-white' : 'text-white/74 hover:bg-white/10',
-                ].join(' ')}
-                onClick={() => sidebarJump(fav.id)}
-              >
-                <span>{fav.icon}</span>
-                <span className="truncate">{fav.name}</span>
-              </button>
-            ))}
+            {SIDEBAR_FAVORITES.map((fav) => {
+              const Icon = fav.Icon;
+              return (
+                <button
+                  key={fav.id}
+                  type="button"
+                  className={[
+                    'flex items-center gap-2 rounded-md px-2 py-1 text-left transition',
+                    current.id === fav.id ? 'bg-sky-500/30 text-white' : 'text-white/74 hover:bg-white/10',
+                  ].join(' ')}
+                  onClick={() => sidebarJump(fav.id)}
+                >
+                  <Icon className="h-4 w-4 shrink-0 opacity-80" strokeWidth={1.75} />
+                  <span className="truncate">{fav.name}</span>
+                </button>
+              );
+            })}
           </div>
           <p className="mt-4 px-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40">位置</p>
           <div className="mt-1.5 grid gap-0.5 text-sm">
-            {SIDEBAR_LOCATIONS.map((loc) => (
-              <button
-                key={loc.id}
-                type="button"
-                className="flex items-center gap-2 rounded-md px-2 py-1 text-left text-white/74 transition hover:bg-white/10"
-                onClick={() => sidebarJump(loc.id)}
-              >
-                <span>{loc.icon}</span>
-                <span className="truncate">{loc.name}</span>
-              </button>
-            ))}
+            {SIDEBAR_LOCATIONS.map((loc) => {
+              const Icon = loc.Icon;
+              return (
+                <button
+                  key={loc.id}
+                  type="button"
+                  className="flex items-center gap-2 rounded-md px-2 py-1 text-left text-white/74 transition hover:bg-white/10"
+                  onClick={() => sidebarJump(loc.id)}
+                >
+                  <Icon className="h-4 w-4 shrink-0 opacity-80" strokeWidth={1.75} />
+                  <span className="truncate">{loc.name}</span>
+                </button>
+              );
+            })}
           </div>
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="flex h-11 shrink-0 items-center gap-2 border-b border-white/10 bg-white/[0.04] px-3">
-            <div className="flex items-center gap-1">
-              <button type="button" disabled={historyIndex <= 0} className="rounded-md px-2 py-1 text-white/70 transition enabled:hover:bg-white/10 disabled:opacity-30" onClick={back} aria-label="后退">‹</button>
-              <button type="button" disabled={historyIndex >= history.length - 1} className="rounded-md px-2 py-1 text-white/70 transition enabled:hover:bg-white/10 disabled:opacity-30" onClick={forward} aria-label="前进">›</button>
-              <button type="button" disabled={path.length === 0} className="rounded-md px-2 py-1 text-white/70 transition enabled:hover:bg-white/10 disabled:opacity-30" onClick={up} aria-label="上一级">↑</button>
+            <div className="flex items-center gap-0.5">
+              <button type="button" disabled={historyIndex <= 0} className="rounded-md p-1.5 text-white/70 transition enabled:hover:bg-white/10 disabled:opacity-30" onClick={back} aria-label="后退">
+                <ChevronLeft className="h-4 w-4" strokeWidth={2} />
+              </button>
+              <button type="button" disabled={historyIndex >= history.length - 1} className="rounded-md p-1.5 text-white/70 transition enabled:hover:bg-white/10 disabled:opacity-30" onClick={forward} aria-label="前进">
+                <ChevronRight className="h-4 w-4" strokeWidth={2} />
+              </button>
+              <button type="button" disabled={path.length === 0} className="rounded-md p-1.5 text-white/70 transition enabled:hover:bg-white/10 disabled:opacity-30" onClick={up} aria-label="上一级">
+                <ChevronUp className="h-4 w-4" strokeWidth={2} />
+              </button>
             </div>
             <div className="min-w-0 flex-1 truncate text-sm font-semibold text-white/85">{current.name}</div>
-            <div className="flex items-center gap-1 rounded-md bg-white/8 p-0.5 text-xs">
-              <button type="button" className={['rounded px-2 py-0.5 transition', view === 'list' ? 'bg-white/20 text-white' : 'text-white/60'].join(' ')} onClick={() => setView('list')}>列表</button>
-              <button type="button" className={['rounded px-2 py-0.5 transition', view === 'icon' ? 'bg-white/20 text-white' : 'text-white/60'].join(' ')} onClick={() => setView('icon')}>图标</button>
+            <div className="flex items-center gap-0.5 rounded-md bg-white/8 p-0.5 text-xs">
+              <button type="button" className={['flex items-center gap-1 rounded px-2 py-0.5 transition', view === 'list' ? 'bg-white/20 text-white' : 'text-white/60'].join(' ')} onClick={() => setView('list')} aria-label="列表视图">
+                <List className="h-3.5 w-3.5" strokeWidth={2} />
+                列表
+              </button>
+              <button type="button" className={['flex items-center gap-1 rounded px-2 py-0.5 transition', view === 'icon' ? 'bg-white/20 text-white' : 'text-white/60'].join(' ')} onClick={() => setView('icon')} aria-label="图标视图">
+                <LayoutGrid className="h-3.5 w-3.5" strokeWidth={2} />
+                图标
+              </button>
             </div>
             <input
               type="text"
@@ -335,8 +373,8 @@ export function MacFinder({ pages, dock, onClose, onOpen }: Props) {
 
           <div className="flex h-7 shrink-0 items-center gap-1 border-t border-white/10 bg-white/[0.04] px-3 text-[11px] text-white/45">
             {breadcrumb.map((node, index) => (
-              <span key={node.id} className="flex items-center gap-1">
-                {index > 0 ? <span className="text-white/25">›</span> : null}
+              <span key={node.id} className="flex items-center gap-0.5">
+                {index > 0 ? <ChevronRight className="h-3 w-3 text-white/25" strokeWidth={2} /> : null}
                 <button
                   type="button"
                   className="rounded px-1 text-white/55 transition hover:text-white"
@@ -346,7 +384,7 @@ export function MacFinder({ pages, dock, onClose, onOpen }: Props) {
                 </button>
               </span>
             ))}
-            <span className="ml-auto">{current.children?.length ?? 0} 项</span>
+            <span className="ml-auto font-mono tabular-nums">{current.children?.length ?? 0} 项</span>
           </div>
         </div>
       </section>

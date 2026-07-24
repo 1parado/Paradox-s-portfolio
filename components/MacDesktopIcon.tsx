@@ -66,16 +66,16 @@ export function MacDesktopIcon({ app, editing, compact = false, selected = false
     >
       <span
         className={[
-          'relative flex items-center justify-center bg-gradient-to-br text-3xl shadow-[0_12px_30px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.22)] ring-1 transition group-hover:ring-white/35',
-          selected ? 'ring-sky-100/80' : 'ring-white/20',
+          'relative flex items-center justify-center bg-gradient-to-br shadow-[0_12px_30px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.28)] ring-1 transition group-hover:ring-white/40 group-hover:shadow-[0_16px_36px_rgba(0,0,0,0.35)]',
+          selected ? 'ring-cyan-100/85 shadow-glow' : 'ring-white/22',
           compact ? 'h-12 w-12 rounded-[1rem]' : 'h-16 w-16 rounded-[1.25rem]',
           app.color,
           editing ? 'app-jiggle' : '',
         ].join(' ')}
       >
-        <span className="absolute inset-x-2 top-1 h-4 rounded-full bg-white/25 blur-[1px]" />
-        <span className="relative text-white">
-          <AppGlyph iconKey={app.iconKey} fallback={app.icon} className={compact ? 'h-7 w-7' : 'h-9 w-9'} />
+        <span className="absolute inset-x-2 top-1 h-4 rounded-full bg-white/28 blur-[1px]" />
+        <span className="relative text-white drop-shadow-sm">
+          <AppGlyph iconKey={app.iconKey} fallback={app.icon} className={compact ? 'h-6 w-6' : 'h-8 w-8'} />
         </span>
       </span>
       {!compact ? (

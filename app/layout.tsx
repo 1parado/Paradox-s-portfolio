@@ -1,6 +1,26 @@
 import type { Metadata } from 'next';
+import { DM_Sans, Instrument_Serif, JetBrains_Mono } from 'next/font/google';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 import './globals.css';
+
+const sans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+});
+
+const display = Instrument_Serif({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-display',
+  display: 'swap',
+});
+
+const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://1parado.github.io'),
@@ -37,8 +57,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="zh-CN">
-      <body>
+    <html lang="zh-CN" className={`${sans.variable} ${display.variable} ${mono.variable}`}>
+      <body className={sans.className}>
         {children}
         <ServiceWorkerRegister />
       </body>

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { CloudOff, Image as ImageIcon } from 'lucide-react';
 import { usePortfolioStore } from '@/lib/store';
 import { addPhoto, isGithubUploadEnabled, readPhotoManifest, removePhoto } from '@/lib/githubAssets';
 import type { PhotoEntry } from '@/lib/types';
@@ -130,12 +131,12 @@ export function PhotoApp() {
           <div className="flex h-full items-center justify-center text-sm text-white/55">加载相册…</div>
         ) : status.kind === 'error' && sorted.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-sm text-white/65">
-            <span className="text-3xl">🌫️</span>
+            <CloudOff className="h-8 w-8 text-white/35" strokeWidth={1.5} />
             <span>{status.message ?? '读取相册失败'}</span>
           </div>
         ) : sorted.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-sm text-white/55">
-            <span className="text-4xl">🖼️</span>
+            <ImageIcon className="h-9 w-9 text-white/35" strokeWidth={1.5} />
             <span>还没有照片{editMode && enabled ? '，点击右上角上传第一张' : ''}。</span>
           </div>
         ) : (

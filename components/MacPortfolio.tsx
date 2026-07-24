@@ -2,8 +2,10 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AmbientCanvas } from '@/components/AmbientCanvas';
 import { ContextMenu } from '@/components/ContextMenu';
 import { DesktopAgent } from '@/components/DesktopAgent';
+import { DesktopHero } from '@/components/DesktopHero';
 import { EditKeyModal } from '@/components/EditKeyModal';
 import { Folder } from '@/components/Folder';
 import { HomeScreen } from '@/components/HomeScreen';
@@ -50,8 +52,12 @@ type Rect = {
 
 const DESKTOP_ICON_WIDTH = 96;
 const DESKTOP_ICON_HEIGHT = 96;
-const WIDGET_WIDTH = 336;
-const WIDGET_HEIGHT = 260;
+const WIDGET_WIDTH = 216;
+const WIDGET_HEIGHT = 168;
+/** Hero card occupies top-left; keep the clock clear of that region. */
+const HERO_SAFE_LEFT = 420;
+const HERO_SAFE_BOTTOM = 300;
+const DEFAULT_WIDGET_POSITION: DesktopIconPosition = { x: 32, y: 320 };
 const DESKTOP_TOP = 64;
 const DESKTOP_RIGHT = 24;
 const DESKTOP_BOTTOM_SAFE = 132;
@@ -84,6 +90,24 @@ function clampWidgetPosition(position: DesktopIconPosition, viewport: { width: n
     x: clamp(position.x, 8, Math.max(8, viewport.width - WIDGET_WIDTH - 8)),
     y: clamp(position.y, 44, Math.max(44, viewport.height - WIDGET_HEIGHT - 96)),
   };
+}
+
+/** Nudge legacy / overlapping positions out from under the hero card. */
+function resolveWidgetPosition(
+  saved: DesktopIconPosition | undefined,
+  viewport: { width: number; height: number },
+): DesktopIconPosition {
+  const base = saved ?? DEFAULT_WIDGET_POSITION;
+  const overlapsHero =
+    base.x < HERO_SAFE_LEFT &&
+    base.y < HERO_SAFE_BOTTOM &&
+    base.x + WIDGET_WIDTH > 24 &&
+    base.y + WIDGET_HEIGHT > 56;
+
+  if (overlapsHero) {
+    return clampWidgetPosition({ x: DEFAULT_WIDGET_POSITION.x, y: HERO_SAFE_BOTTOM + 16 }, viewport);
+  }
+  return clampWidgetPosition(base, viewport);
 }
 
 function selectionToRect(selection: SelectionState): Rect {
@@ -185,7 +209,7 @@ function MacPortfolioInner() {
     });
     return entries;
   }, [desktopEntries, desktopIconPositions, viewport]);
-  const widgetPosition = clampWidgetPosition(desktopWidgetPositions.summary ?? { x: 40, y: 368 }, viewport);
+  const widgetPosition = resolveWidgetPosition(desktopWidgetPositions.summary, viewport);
 
   // 当前打开的文件夹路径（从根到当前层），由 pages 派生，重命名/移动后实时同步。
   const folderPath = useMemo<FolderItem[]>(() => {
@@ -440,19 +464,23 @@ function MacPortfolioInner() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [activeWindow, showSpotlight, folderNavStack, closeFolder]);
 
+  const totalApps = agentApps.length;
+  const openWindowCount = windows.filter((window) => !window.minimized).length;
+
   return (
-    <main className="relative min-h-dvh overflow-hidden bg-zinc-950 text-white">
+    <main className="relative min-h-dvh overflow-hidden bg-void text-white">
       <div className="absolute inset-0" style={{ background: wallpaper }} />
-      <div className="absolute inset-0 bg-[linear-gradient(125deg,rgba(255,255,255,0.11),transparent_22%,rgba(0,0,0,0.28)_64%,rgba(0,0,0,0.48)),linear-gradient(0deg,rgba(0,0,0,0.26),rgba(255,255,255,0.04))]" />
-      <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/30 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-black/45 to-transparent" />
+      <div className="absolute inset-0 bg-[linear-gradient(125deg,rgba(255,255,255,0.08),transparent_24%,rgba(0,0,0,0.22)_60%,rgba(0,0,0,0.5)),linear-gradient(0deg,rgba(0,0,0,0.28),rgba(255,255,255,0.03))]" />
+      <AmbientCanvas />
+      <div className="absolute inset-x-0 top-0 z-[2] h-28 bg-gradient-to-b from-black/40 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 z-[2] h-56 bg-gradient-to-t from-black/50 to-transparent" />
 
       <section className="relative z-10 min-h-dvh md:hidden">
         <div className="mx-auto flex min-h-dvh w-full items-center justify-center bg-black sm:px-5 sm:py-8">
           <div className="relative h-dvh w-screen overflow-hidden bg-black shadow-phone sm:h-[860px] sm:w-[430px] sm:rounded-[3.2rem] sm:border sm:border-white/10">
             <div className="absolute left-1/2 top-3 z-20 hidden h-8 w-36 -translate-x-1/2 rounded-full bg-black/80 sm:block" />
             <div className="absolute inset-0" style={{ background: wallpaper }} />
-            <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(255,255,255,0.18),transparent_26%,rgba(0,0,0,0.26)_74%),linear-gradient(0deg,rgba(0,0,0,0.24),rgba(255,255,255,0.04))] backdrop-blur-[1px]" />
+            <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(255,255,255,0.16),transparent_26%,rgba(0,0,0,0.28)_74%),linear-gradient(0deg,rgba(0,0,0,0.24),rgba(255,255,255,0.04))] backdrop-blur-[1px]" />
             <div className="relative z-10 h-full">
               <HomeScreen
                 pages={pages}
@@ -531,17 +559,7 @@ function MacPortfolioInner() {
           />
         ) : null}
 
-        <div className="absolute left-10 top-20 max-w-[34rem]">
-          <div className="rounded-[1.65rem] border border-white/15 bg-zinc-950/30 p-6 shadow-[0_26px_90px_rgba(0,0,0,0.34)] backdrop-blur-2xl">
-            <div className="mb-5 flex items-center gap-2">
-              <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
-              <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
-              <span className="h-3 w-3 rounded-full bg-[#28c840]" />
-            </div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/48">Paradox Desktop</p>
-            <h1 className="mt-3 text-6xl font-semibold leading-none tracking-tight">Paradox&apos;s portfolio</h1>
-          </div>
-        </div>
+        <DesktopHero appCount={totalApps} windowCount={openWindowCount} />
 
         <motion.div
           className="absolute z-20 cursor-grab active:cursor-grabbing"
@@ -606,7 +624,7 @@ function MacPortfolioInner() {
         >
           {selection ? (
             <div
-              className="pointer-events-none absolute rounded-md border border-sky-200/75 bg-sky-300/20 shadow-[0_0_0_1px_rgba(14,165,233,0.18)] backdrop-blur-[1px]"
+              className="pointer-events-none absolute rounded-md border border-cyan-200/70 bg-cyan-300/15 shadow-[0_0_0_1px_rgba(103,232,249,0.2)] backdrop-blur-[1px]"
               style={{
                 left: selectionToRect(selection).x,
                 top: selectionToRect(selection).y,

@@ -180,9 +180,9 @@ export function MacWindow({ app, zIndex, minimized, focused, onFocus, onClose, o
   return (
     <motion.section
       className={[
-        'absolute flex flex-col overflow-hidden border text-white shadow-[0_30px_110px_rgba(0,0,0,0.48)] backdrop-blur-3xl',
-        fullscreen ? 'rounded-none' : 'rounded-[1.1rem]',
-        focused ? 'border-white/35 bg-zinc-950/70' : 'border-white/15 bg-zinc-950/55',
+        'absolute flex flex-col overflow-hidden border text-white shadow-glass backdrop-blur-3xl',
+        fullscreen ? 'rounded-none' : 'rounded-[1.2rem]',
+        focused ? 'border-white/32 bg-zinc-950/78 ring-1 ring-cyan-200/10' : 'border-white/14 bg-zinc-950/58',
       ].join(' ')}
       style={fullscreen ? { zIndex, left: 0, top: MENUBAR_HEIGHT, width: '100vw', height: `calc(100vh - ${MENUBAR_HEIGHT}px)` } : {
         zIndex,
@@ -228,23 +228,23 @@ export function MacWindow({ app, zIndex, minimized, focused, onFocus, onClose, o
           ))
         : null}
 
-      <div className="relative flex h-11 shrink-0 items-center gap-3 border-b border-white/10 bg-white/10 px-4 backdrop-blur-3xl" onDoubleClick={toggleZoom}>
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30" />
+      <div className="relative flex h-11 shrink-0 items-center gap-3 border-b border-white/10 bg-white/[0.08] px-4 backdrop-blur-3xl" onDoubleClick={toggleZoom}>
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/35 to-transparent" />
         <div className="flex items-center gap-2">
-          <button type="button" className="h-3 w-3 rounded-full bg-[#ff5f57] ring-1 ring-black/15" aria-label="关闭窗口" onClick={onClose} />
-          <button type="button" className="h-3 w-3 rounded-full bg-[#febc2e] ring-1 ring-black/15" aria-label="最小化窗口" onClick={handleMinimize} />
-          <button type="button" className="h-3 w-3 rounded-full bg-[#28c840] ring-1 ring-black/15" aria-label="全屏窗口" onClick={toggleFullscreen} />
+          <button type="button" className="h-3 w-3 rounded-full bg-[#ff5f57] ring-1 ring-black/15 transition hover:brightness-110" aria-label="关闭窗口" onClick={onClose} />
+          <button type="button" className="h-3 w-3 rounded-full bg-[#febc2e] ring-1 ring-black/15 transition hover:brightness-110" aria-label="最小化窗口" onClick={handleMinimize} />
+          <button type="button" className="h-3 w-3 rounded-full bg-[#28c840] ring-1 ring-black/15 transition hover:brightness-110" aria-label="全屏窗口" onClick={toggleFullscreen} />
         </div>
 
         <div className="min-w-0 flex-1 text-center">
-          <div className="truncate text-[13px] font-semibold text-white/90">{app.title}</div>
-          <div className="truncate text-[11px] text-white/45">{app.url || `builtin://${app.builtinKey}`}</div>
+          <div className="truncate text-[13px] font-semibold tracking-tight text-white/92">{app.title}</div>
+          <div className="truncate font-mono text-[10px] text-white/40">{app.url || `builtin://${app.builtinKey}`}</div>
         </div>
 
-        <div className="flex items-center gap-2 text-[12px]">
+        <div className="flex items-center gap-1.5 text-[12px]">
           <button
             type="button"
-            className="rounded-md bg-white/10 px-2 py-1 text-white/75 transition hover:bg-white/20"
+            className="rounded-md border border-white/8 bg-white/8 px-2 py-1 text-white/75 transition hover:bg-white/16"
             onClick={() => {
               setIframeError(false);
               setRefreshKey((value) => value + 1);
@@ -252,11 +252,11 @@ export function MacWindow({ app, zIndex, minimized, focused, onFocus, onClose, o
           >
             刷新
           </button>
-          <button type="button" className="rounded-md bg-white/10 px-2 py-1 text-white/75 transition hover:bg-white/20" onClick={toggleZoom}>
+          <button type="button" className="rounded-md border border-white/8 bg-white/8 px-2 py-1 text-white/75 transition hover:bg-white/16" onClick={toggleZoom}>
             缩放
           </button>
           {app.url ? (
-            <a href={app.url} target="_blank" rel="noreferrer" className="rounded-md bg-white/10 px-2 py-1 text-white/75 transition hover:bg-white/20">
+            <a href={app.url} target="_blank" rel="noreferrer" className="rounded-md border border-white/8 bg-white/8 px-2 py-1 text-white/75 transition hover:bg-white/16">
               外部打开
             </a>
           ) : null}
