@@ -33,7 +33,7 @@ const repos: Repo[] = [
     name: 'alibaba/open-code-review',
     url: 'https://github.com/alibaba/open-code-review',
     role: 'AI 代码审查方向开源项目',
-    stars: '10.1k',
+    stars: '15.3k',
     techStack: ['Go', 'TypeScript', 'LLM', 'Code Review'],
     prs: [
       {
@@ -105,13 +105,30 @@ const repos: Repo[] = [
           '作者确认 pnpm typecheck、pnpm test、cargo test 全过，无密钥泄露，4 项 CI 通过后合并',
         ],
       },
+      {
+        id: '180',
+        title: 'feat: add message tree node',
+        date: '2026-07-28',
+        state: 'merged',
+        summary: '在会话 transcript 右侧加入 Grok Web 风格的消息节点轨道，便于在长会话中定位与跳转，不改动 journal schema / session fork / agent runtime。',
+        meta: '10 个文件 · +1470 / -23 · 含设计文档与单测',
+        details: [
+          '按消息粒度建节点（非 turn 合并、非分支树）：每个合格的 user / assistant bubble 对应一条轨道刻度',
+          '新增 MessageNodeRail：短刻度、↑/↓ 步进、hover 预览 portal（角色 + 摘要 + n / total）',
+          '点击 / 上一条 / 下一条 滚动到对应 data-message-id 消息，并短暂 focus ring 高亮',
+          'Thinking 不计入节点：仅 thought / 空 reply body 的 assistant 行被排除；预览始终取 reply 正文',
+          '导航可靠性：nav lock + rail cursor 避免高消息上「下一条」回弹；虚拟列表 force-mount + start-aligned 滚动；阅读位置 active 高亮',
+          'i18n：message.nodes.* 覆盖 en / zh / zh-TW；设计说明见 docs/plans/2026-07-28-session-message-nodes-design.md',
+          '单测 sessionMessageNodes.test.ts：候选过滤、thought-only、相邻导航、基于 rect 的 active 计算',
+        ],
+      },
     ],
   },
   {
     name: 'Monica-Pass/Monica',
     url: 'https://github.com/Monica-Pass/Monica',
     role: '跨平台密码管理器与安全工具',
-    stars: '832',
+    stars: '878',
     techStack: ['Kotlin', '加密存储', 'Android'],
     prs: [
       {
