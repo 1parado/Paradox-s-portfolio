@@ -50,6 +50,17 @@ export const chatAgnesApp: AppItem = external({
   techStack: ['AI App', 'Chat', 'GitHub Pages'],
 });
 
+export const longcatAgentApp: AppItem = external({
+  id: 'longcat-agent',
+  title: 'LongCat Agent',
+  icon: 'agent',
+  iconKey: 'agent',
+  color: 'from-orange-400 to-amber-600',
+  description: 'LongCat Agent 前端智能体应用。',
+  url: 'https://1parado.github.io/frontend-agent/',
+  techStack: ['AI Agent', 'Frontend', 'GitHub Pages'],
+});
+
 export const grokSwitchApp: AppItem = external({
   id: 'grok-switch',
   title: 'grok_switch',
@@ -125,16 +136,7 @@ export const defaultPages: HomePage[] = [
             techStack: ['React', 'TypeScript', 'Tailwind CSS', 'Netlify', '表单交互'],
           }),
           chatAgnesApp,
-          external({
-            id: 'longcat-agent',
-            title: 'LongCat Agent',
-            icon: 'agent',
-            iconKey: 'agent',
-            color: 'from-orange-400 to-amber-600',
-            description: 'LongCat Agent 前端智能体应用。',
-            url: 'https://1parado.github.io/frontend-agent/',
-            techStack: ['AI Agent', 'Frontend', 'GitHub Pages'],
-          }),
+          longcatAgentApp,
           grokSwitchApp,
           learnPiApp,
         ],
