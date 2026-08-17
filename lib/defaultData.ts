@@ -82,6 +82,17 @@ export const learnPiApp: AppItem = external({
   techStack: ['GitHub Pages'],
 });
 
+export const wallspaceApp: AppItem = external({
+  id: 'wallspace',
+  title: 'Wallspace',
+  icon: 'photo',
+  iconKey: 'photo',
+  color: 'from-rose-400 to-pink-600',
+  description: 'Wallspace 壁纸空间，在线浏览与收藏高清壁纸作品。',
+  url: 'https://1parado.github.io/Wallspace/',
+  techStack: ['Wallpaper', 'GitHub Pages'],
+});
+
 export const musicApp: AppItem = builtin({
   id: 'music',
   title: '音乐',
@@ -139,6 +150,7 @@ export const defaultPages: HomePage[] = [
           longcatAgentApp,
           grokSwitchApp,
           learnPiApp,
+          wallspaceApp,
         ],
       }),
       builtin({ id: 'open-source', title: '开源贡献', icon: 'github', iconKey: 'github', color: 'from-neutral-500 to-neutral-950', description: '参与过的开源项目、技术栈和社区数据。', builtinKey: 'open-source', techStack: ['GitHub', 'Code Review', 'TypeScript', 'AI Agent'] }),
