@@ -61,6 +61,17 @@ export const longcatAgentApp: AppItem = external({
   techStack: ['AI Agent', 'Frontend', 'GitHub Pages'],
 });
 
+export const resolveApp: AppItem = external({
+  id: 'resolve',
+  title: 'Resolve',
+  icon: 'sparkles',
+  iconKey: 'sparkles',
+  color: 'from-blue-500 to-emerald-400',
+  description: 'AI Agent P2P 调度与交易平台：按次付费、一键调用闲置算力与微调模型。',
+  url: 'https://1parado.github.io/resolve/',
+  techStack: ['AI Agent', 'P2P 调度', '钱包计费', 'GitHub Pages'],
+});
+
 export const grokSwitchApp: AppItem = external({
   id: 'grok-switch',
   title: 'grok_switch',
@@ -148,6 +159,7 @@ export const defaultPages: HomePage[] = [
           }),
           chatAgnesApp,
           longcatAgentApp,
+          resolveApp,
           grokSwitchApp,
           learnPiApp,
           wallspaceApp,
