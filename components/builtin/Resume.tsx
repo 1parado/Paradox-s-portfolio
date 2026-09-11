@@ -20,10 +20,18 @@ type WorkEntry = {
 
 type ProjectEntry = {
   name: string;
-  period: string;
+  period?: string;
   url?: string;
   desc: string;
   stack: string;
+  points: string[];
+};
+
+type OpenSourceEntry = {
+  repo: string;
+  url: string;
+  stars: string;
+  role: string;
   points: string[];
 };
 
@@ -37,30 +45,55 @@ const awards = '2024 年国家学业奖学金、2025 年国家学业奖学金、
 
 const internships: WorkEntry[] = [
   {
-    company: '杭州代塔供应链',
-    period: '2026.01 - 2026.05',
-    role: '后端开发实习生 · 数仓 + 业务中台',
-    stack: 'SpringBoot、MySQL、Dubbo、Redis、OCR、Codex、OpenClaw、阿里云效',
+    company: '上海七牛信息技术有限公司',
+    period: '2026.07 - 2026.09',
+    role: '产品架构实习生',
+    stack: 'Spring Boot、PostgreSQL、Spring Mail、Qiniu Java SDK、Codex',
     points: [
-      '负责用户中心 WMS 权限管理模块后端开发，围绕用户列表、仓库绑定、角色绑定、权限查看、操作日志导出等功能进行接口设计、前后端联调，并接入数据中台 Doris 仓库数据，支持菜鸟、京东、星辰 WMS 等外部仓库在用户中心统一管理。',
-      '负责 OCR 文档识别与提取系统开发，基于 OCR + LLM 实现文档文本识别、业务类型判断和结构化字段抽取，并通过 Master-Worker + Redis 队列构建批量任务调度与实时进度推送能力。',
-      '基于 OpenClaw 搭建企业内部 AI Agent 应用，落地企微通知 Agent、需求状态变更 Agent、日志排查 Agent 等场景，实现自然语言理解、工具调用、业务系统操作和结果回推的自动化闭环。',
-      '参与线上问题排查与服务稳定性保障，协助定位接口异常、慢 SQL、日志报错、环境配置和发布流水线问题，使用 Nacos、云效流水线、日志平台等工具完成配置调整、问题复现和多环境验证。',
+      '负责 AI 英语口语陪练产品后端开发，实现用户与权益体系，基于邮箱 OTP 验证码完成注册/登录认证，搭建用户权益中心及后台管理模块。',
+      '实现自定义场景口语练习：基于 LLM 实现场景生成、阶段练习状态机，接入科大讯飞 Suntone API 语音评测，完成自定义场景资源持久化等完整业务链路闭环。',
+      '实现 LLM 适配层与模型后台管理，基于厂商/模型/协议数据模型完成数据库驱动配置，后台管理支持模型启用/停用与密钥管理。',
+    ],
+  },
+  {
+    company: '杭州代塔供应链管理有限公司',
+    period: '2026.01 - 2026.05',
+    role: 'OMS组 - 后端开发实习生',
+    stack: 'Spring Cloud Alibaba、MySQL、Dubbo、Redis、Nacos、OpenClaw',
+    points: [
+      '为优化小二端用户绑定 WMS 仓库流程，在用户中心添加 WMS 权限管理功能，实现用户->仓库->角色->权限的统一管理，支持内部 WMS 与外部 WMS 仓库统一绑定，运维配置效率提升 60%+。',
+      '为提升运营人员的查询效率，新增快捷查询方案保存组件，实现查询条件持久化；通过生成列 + 唯一索引优化，保证用户默认查询方案唯一、方案名称不重复。',
+      '基于 OpenClaw 构建企业内部 Agent，包括日志排查、周报生成、数据诊断等 Agent；设计和封装可复用 Skills，实现流程自动化闭环。',
+      '负责用户中心与达能数据回流项目的问题排查，协助定位接口调用异常；维护 Nacos 多环境配置，排查阿里云效流水线部署异常及海豚调度器任务异常。',
     ],
   },
   {
     company: '河南首云信息科技有限公司',
     period: '2025.09 - 2025.12',
-    role: '后端开发实习生',
-    stack: 'SpringBoot、MySQL、Redis、SpringDoc、若依框架',
+    role: '软件系统部 - 后端开发实习生',
+    stack: 'Spring Boot、MySQL、MyBatis、SpringDoc、RuoYi、WebSocket、OSS',
     points: [
-      '负责企业级督事督办项目的 PC 端及 APP 端的后端研发，负责数据库设计、任务下发、填报、多级考核审核、任务归档等核心业务模块的设计与实现。',
-      '根据 UI 原型分析业务需求，设计数据库表结构，严格遵守 RESTful 规范编写接口、文档以及测试用例，与前端团队完成前后端联调和功能测试，项目已成功上线，实现了从任务下发到任务考核的全流程自动化。',
+      '负责督事督办系统与一事一评议系统的后端开发，实现任务下发、多轮填报、审核、考核、归档完整业务闭环。',
+      '实现前端可视化看板、阿里云 OSS 文件上传，基于 EasyExcel 实现数据与日志导出等功能。',
+      '负责 MySQL 表结构设计、前后端联调、功能测试及问题排查，完成业务流程验证，系统已稳定上线。',
     ],
   },
 ];
 
 const projects: ProjectEntry[] = [
+  {
+    name: 'LongCat Agent',
+    url: 'https://github.com/1parado/LongCat-agent',
+    desc: '基于 Go 的轻量 Coding Agent，支持工具调用、MCP、Skills、Memory 管理、IM 平台接入。',
+    stack: 'Go、MCP、WebSocket、OAuth 2.0、SQLite',
+    points: [
+      '实现多模型、多协议供应商管理，支持模型热切换、配置持久化；基于 goroutine + channel 实现 SSE 流式输出。',
+      '实现会话管理、提示词缓存、自动上下文压缩、多轮工具调用、Plan / Execute 模式切换。',
+      '实现 MCP 动态注册 + Skills 管理；基于 gh CLI 授权实现开源 Skills 一键安装、解析与 SQLite 缓存持久化保存。',
+      '基于 WebSocket 长连接 + OAuth 2.0 设备授权实现一键扫码授权飞书平台，实现远程调用。',
+      '设计 Agent 双层记忆：工作区记忆与长期记忆；支持 GitHub 仓库一键同步，实现跨设备迁移。',
+    ],
+  },
   {
     name: '智旅云',
     period: '2025.10 - 2026.05',
@@ -89,11 +122,34 @@ const projects: ProjectEntry[] = [
   },
 ];
 
+const openSource: OpenSourceEntry[] = [
+  {
+    repo: 'alibaba/open-code-review',
+    url: 'https://github.com/alibaba/open-code-review',
+    stars: '21K',
+    role: 'Contributors',
+    points: [
+      '#122 新增 --model 参数和第三方供应商模型列表管理，支持单次指定评审模型，提升模型切换与调试灵活性。',
+      '#162 优化 LLM Test 连通性诊断流程，修复空响应异常处理与错误反馈，提升 CLI 工具可用性。',
+    ],
+  },
+  {
+    repo: 'RongleCat/grok-app',
+    url: 'https://github.com/RongleCat/grok-app',
+    stars: '1.1K',
+    role: 'Contributors',
+    points: [
+      '#129 新增 /history 命令，实现历史提示词下拉菜单选择以及快速召回，提升输入和上下文管理效率。',
+      '#180 新增消息树节点功能，将对话消息组织为树形层级结构，方便用户进行消息回溯。',
+    ],
+  },
+];
+
 const skills: string[] = [
-  '熟练掌握 SpringBoot、MyBatis 等主流开源框架，理解 IOC、AOP 实现原理、Bean 生命周期及常用设计模式；熟练使用常用注解并具备良好的工程化开发能力。',
-  '熟悉 MySQL 基本用法及数据库设计，掌握索引、事务、MVCC 等核心机制，具备慢查询分析与 SQL 调优意识。',
-  '熟练使用 IDEA、ClaudeCode、Codex、Trae 等开发工具，熟练使用 Git 进行版本管理，熟悉 Apifox、Postman 等接口测试工具，熟练使用 Navicat 进行数据库管理与调试。',
-  '关注 AI 领域前沿技术，熟悉 LLM 基础原理（API、Skills、Prompt、Memory），使用过 OpenClaw、Hermes 等 Agent，能够借助 AI 工具提升代码开发、调试与工程效率；具备良好的团队沟通与协作能力，拥有较强的抗压能力和自学能力，具备开源精神，乐于学习和探索新技术，能够快速适应新业务与技术栈。',
+  'Java 基础：熟练 Java 基础，熟悉常用集合、面向对象三大特性、反射、线程进程、垃圾回收等。',
+  '数据库：熟练 SQL 语句的使用，熟悉事务四大特性、事务隔离级别、MVCC、慢查询分析等。',
+  'AI：熟练使用 Claude Code、Codex、Cursor 等 AI 工具，可封装业务 Skills；熟悉 Agent 核心机制。',
+  '综合素养：拥有较强的抗压能力和好奇心，具备开源精神，乐于学习和探索新技术。',
 ];
 
 function SectionTitle({ index, title }: { index: string; title: string }) {
@@ -184,7 +240,9 @@ export function Resume() {
               <div key={proj.name} className="rounded-2xl border border-white/10 bg-white/4 p-4">
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                   <h3 className="text-base font-semibold text-white">{proj.name}</h3>
-                  <span className="rounded-md bg-sky-500/15 px-2 py-0.5 text-[11px] text-sky-200">{proj.period}</span>
+                  {proj.period ? (
+                    <span className="rounded-md bg-sky-500/15 px-2 py-0.5 text-[11px] text-sky-200">{proj.period}</span>
+                  ) : null}
                   {proj.url ? (
                     <a
                       href={proj.url}
@@ -208,9 +266,32 @@ export function Resume() {
           </div>
         </section>
 
+        {/* 开源贡献 */}
+        <section className="mb-9">
+          <SectionTitle index="04" title="开源贡献" />
+          <div className="grid gap-4">
+            {openSource.map((os) => (
+              <div key={os.repo} className="rounded-2xl border border-white/10 bg-white/4 p-4">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <h3 className="text-base font-semibold text-white">
+                    <a href={os.url} target="_blank" rel="noreferrer" className="transition hover:text-sky-300 hover:underline">
+                      {os.repo} ↗
+                    </a>
+                  </h3>
+                  <span className="rounded-md bg-amber-500/15 px-2 py-0.5 text-[11px] text-amber-200">★ {os.stars}</span>
+                  <span className="ml-auto text-sm text-white/65">{os.role}</span>
+                </div>
+                <ul className="mt-3 grid gap-2">
+                  {os.points.map((p, i) => <Bullet key={i}>{p}</Bullet>)}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* 技能 */}
         <section className="mb-4">
-          <SectionTitle index="04" title="专业技能" />
+          <SectionTitle index="05" title="专业技能" />
           <ul className="grid gap-2.5">
             {skills.map((s, i) => (
               <li key={i} className="rounded-2xl border border-white/10 bg-white/4 p-3 text-sm leading-relaxed text-white/75">

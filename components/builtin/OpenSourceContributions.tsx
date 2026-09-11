@@ -33,7 +33,7 @@ const repos: Repo[] = [
     name: 'alibaba/open-code-review',
     url: 'https://github.com/alibaba/open-code-review',
     role: 'AI 代码审查方向开源项目',
-    stars: '15.3k',
+    stars: '21k',
     techStack: ['Go', 'TypeScript', 'LLM', 'Code Review'],
     prs: [
       {
@@ -70,7 +70,7 @@ const repos: Repo[] = [
     name: 'RongleCat/grok-app',
     url: 'https://github.com/RongleCat/grok-app',
     role: '非官方 Grok Build CLI 桌面工作台',
-    stars: '310',
+    stars: '1.1k',
     techStack: ['Tauri 2', 'Rust', 'React', 'TypeScript', 'i18n'],
     prs: [
       {
