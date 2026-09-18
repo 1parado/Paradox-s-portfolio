@@ -19,7 +19,7 @@ export function VoiceCalendar() {
         <div className="mt-7 rounded-[1.35rem] border border-white/10 bg-white/[0.07] p-5 shadow-inner">
           <p className="text-sm font-semibold text-cyan-100/75">提示框</p>
           <p className="mt-3 text-2xl font-semibold leading-snug">
-            七牛云暑期实训，（拿到Offer，暑期不能离校，遗憾！）
+            七牛云暑期实训
           </p>
         </div>
       </div>
