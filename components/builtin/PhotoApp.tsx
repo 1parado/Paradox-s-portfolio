@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { CloudOff, Image as ImageIcon } from 'lucide-react';
 import { usePortfolioStore } from '@/lib/store';
 import { addPhoto, isGithubUploadEnabled, readPhotoManifest, removePhoto } from '@/lib/githubAssets';
+import { toCdnUrl } from '@/lib/cdn';
 import type { PhotoEntry } from '@/lib/types';
 
 type Status = { kind: 'idle' | 'loading' | 'error'; message?: string };
@@ -152,9 +153,13 @@ export function PhotoApp() {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={photo.url}
+                  src={toCdnUrl(photo.url)}
                   alt={photo.name}
                   loading="lazy"
+                  onError={(event) => {
+                    // CDN 失败（超限/被墙/故障）时回退 raw 直链
+                    if (event.currentTarget.src !== photo.url) event.currentTarget.src = photo.url;
+                  }}
                   className="h-full w-full object-cover transition group-hover:scale-105"
                 />
                 {editMode ? (
@@ -232,8 +237,11 @@ export function PhotoApp() {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={activePhoto.url}
+                src={toCdnUrl(activePhoto.url)}
                 alt={activePhoto.name}
+                onError={(event) => {
+                  if (event.currentTarget.src !== activePhoto.url) event.currentTarget.src = activePhoto.url;
+                }}
                 className="max-h-[80vh] max-w-full rounded-xl object-contain"
               />
               <div className="mt-2 text-center text-xs text-white/70">{activePhoto.name}</div>

@@ -11,6 +11,7 @@ import { PasswordModal } from '@/components/PasswordModal';
 import { SettingsPanel } from '@/components/SettingsPanel';
 import { WallpaperPicker } from '@/components/WallpaperPicker';
 import { findFolderById } from '@/lib/folders';
+import { useAcceleratedWallpaper } from '@/lib/cdn';
 import { StoreProvider, usePortfolioStore } from '@/lib/store';
 import type { AppItem, FolderItem } from '@/lib/types';
 
@@ -32,6 +33,9 @@ function PhonePortfolioInner() {
     verifyEditKey,
     isEditKeyConfigured,
   } = usePortfolioStore();
+
+  // 壁纸 CDN 加速：探针成功后切换到 jsDelivr，失败保持 raw 直链
+  const displayWallpaper = useAcceleratedWallpaper(wallpaper);
 
   const [activeApp, setActiveApp] = useState<AppItem | null>(null);
   const [passwordApp, setPasswordApp] = useState<AppItem | null>(null);
@@ -106,7 +110,7 @@ function PhonePortfolioInner() {
 
   return (
     <IPhoneFrame>
-      <div className="absolute inset-0" style={{ background: wallpaper }} />
+      <div className="absolute inset-0" style={{ background: displayWallpaper }} />
       <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]" />
 
       <div className="relative z-10 h-full">

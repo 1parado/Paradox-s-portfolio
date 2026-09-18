@@ -25,6 +25,7 @@ import { SettingsPanel } from '@/components/SettingsPanel';
 import { Spotlight } from '@/components/Spotlight';
 import { WallpaperPicker } from '@/components/WallpaperPicker';
 import { findFolderById, flattenAllItems, isFolder } from '@/lib/folders';
+import { useAcceleratedWallpaper } from '@/lib/cdn';
 import { StoreProvider, usePortfolioStore } from '@/lib/store';
 import type { AgentAction } from '@/lib/agnesAgent';
 import type { AppItem, DesktopIconPosition, FolderItem } from '@/lib/types';
@@ -155,6 +156,9 @@ function MacPortfolioInner() {
     verifyEditKey,
     isEditKeyConfigured,
   } = usePortfolioStore();
+
+  // 壁纸 CDN 加速：探针成功后切换到 jsDelivr，失败保持 raw 直链
+  const displayWallpaper = useAcceleratedWallpaper(wallpaper);
 
   const [windows, setWindows] = useState<WindowState[]>([]);
   const [activeMobileApp, setActiveMobileApp] = useState<AppItem | null>(null);
@@ -469,7 +473,7 @@ function MacPortfolioInner() {
 
   return (
     <main className="relative min-h-dvh overflow-hidden bg-void text-white">
-      <div className="absolute inset-0" style={{ background: wallpaper }} />
+      <div className="absolute inset-0" style={{ background: displayWallpaper }} />
       <div className="absolute inset-0 bg-[linear-gradient(125deg,rgba(255,255,255,0.08),transparent_24%,rgba(0,0,0,0.22)_60%,rgba(0,0,0,0.5)),linear-gradient(0deg,rgba(0,0,0,0.28),rgba(255,255,255,0.03))]" />
       <AmbientCanvas />
       <div className="absolute inset-x-0 top-0 z-[2] h-28 bg-gradient-to-b from-black/40 to-transparent" />
@@ -479,7 +483,7 @@ function MacPortfolioInner() {
         <div className="mx-auto flex min-h-dvh w-full items-center justify-center bg-black sm:px-5 sm:py-8">
           <div className="relative h-dvh w-screen overflow-hidden bg-black shadow-phone sm:h-[860px] sm:w-[430px] sm:rounded-[3.2rem] sm:border sm:border-white/10">
             <div className="absolute left-1/2 top-3 z-20 hidden h-8 w-36 -translate-x-1/2 rounded-full bg-black/80 sm:block" />
-            <div className="absolute inset-0" style={{ background: wallpaper }} />
+            <div className="absolute inset-0" style={{ background: displayWallpaper }} />
             <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(255,255,255,0.16),transparent_26%,rgba(0,0,0,0.28)_74%),linear-gradient(0deg,rgba(0,0,0,0.24),rgba(255,255,255,0.04))] backdrop-blur-[1px]" />
             <div className="relative z-10 h-full">
               <HomeScreen
